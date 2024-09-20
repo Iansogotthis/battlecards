@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Battle TCG - Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -15,10 +16,11 @@
         <div class="opponent-area">
             <div id="opponent-hand" class="hand"></div>
             <div class="deck">
+                <i class="fas fa-book"></i>
                 <span id="opponent-deck-count">30</span>
             </div>
             <div class="health-bar">
-                <span>Opponent Health:</span>
+                <i class="fas fa-heart"></i>
                 <span id="opponent-health">30</span>
             </div>
         </div>
@@ -27,19 +29,22 @@
         <div class="player-area">
             <div id="player-hand" class="hand"></div>
             <div class="deck">
+                <i class="fas fa-book"></i>
                 <span id="player-deck-count">30</span>
             </div>
             <div class="health-bar">
-                <span>Player Health:</span>
+                <i class="fas fa-heart"></i>
                 <span id="player-health">30</span>
             </div>
         </div>
         <div class="discard-piles">
             <div class="discard-pile">
+                <i class="fas fa-trash-alt"></i>
                 <div class="discard-pile-label">Player Discard Pile:</div>
                 <span id="player-discard-pile-count">0</span>
             </div>
             <div class="discard-pile">
+                <i class="fas fa-trash-alt"></i>
                 <div class="discard-pile-label">AI Discard Pile:</div>
                 <span id="opponent-discard-pile-count">0</span>
             </div>

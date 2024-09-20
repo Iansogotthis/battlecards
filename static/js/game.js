@@ -129,13 +129,31 @@ function updateTurnIndicator() {
     const turnIndicator = document.getElementById('turn-indicator');
     turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
     console.log('Turn indicator updated:', turnIndicator.textContent);
+    
+    // Add animation for turn transition
+    turnIndicator.style.animation = 'none';
+    turnIndicator.offsetHeight; // Trigger reflow
+    turnIndicator.style.animation = 'fadeInOut 0.5s ease-in-out';
 }
 
 function updateHealth() {
     const playerHealth = document.getElementById('player-health');
     const opponentHealth = document.getElementById('opponent-health');
-    playerHealth.textContent = gameState.playerHealth;
-    opponentHealth.textContent = gameState.opponentHealth;
+    animateValue(playerHealth, parseInt(playerHealth.textContent), gameState.playerHealth, 500);
+    animateValue(opponentHealth, parseInt(opponentHealth.textContent), gameState.opponentHealth, 500);
+}
+
+function animateValue(element, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        element.textContent = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
 }
 
 function updateRoundIndicator() {
@@ -202,6 +220,15 @@ function drawCard() {
                 gameState.playerHand.push(card);
                 gameState.playerDeckCount--;
                 updateGameBoard();
+                
+                // Add animation for card draw
+                const cardElement = document.querySelector(`[data-card-id="${card.id}"]`);
+                if (cardElement) {
+                    cardElement.classList.add('card-drawn');
+                    setTimeout(() => {
+                        cardElement.classList.remove('card-drawn');
+                    }, 500);
+                }
             } else {
                 console.warn('Duplicate card detected, not adding to hand:', card);
             }
