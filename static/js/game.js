@@ -7,7 +7,8 @@ let gameState = {
     currentTurn: 'player',
     playerDeckCount: 30,
     opponentDeckCount: 30,
-    discardPileCount: 0,
+    playerDiscardPileCount: 0,
+    opponentDiscardPileCount: 0,
     playerHealth: 30,
     opponentHealth: 30,
     gameOver: false,
@@ -118,8 +119,10 @@ function updateDeckCounts() {
 }
 
 function updateDiscardPile() {
-    const discardPileCount = document.getElementById('discard-pile-count');
-    discardPileCount.textContent = gameState.discardPileCount;
+    const playerDiscardPileCount = document.getElementById('player-discard-pile-count');
+    const opponentDiscardPileCount = document.getElementById('opponent-discard-pile-count');
+    playerDiscardPileCount.textContent = gameState.playerDiscardPileCount;
+    opponentDiscardPileCount.textContent = gameState.opponentDiscardPileCount;
 }
 
 function updateTurnIndicator() {

@@ -75,6 +75,9 @@ def play_card():
         
         success = game.play_card(card_id, player)
         if success:
+            card = next((c for c in game.player_hand + game.opponent_hand if c.id == card_id), None)
+            if card:
+                game.discard_card(card, player)
             new_state = game.get_game_state()
             socketio.emit('update_game_state', new_state)
             logger.info(f"{player.capitalize()} played card: {card_id}")

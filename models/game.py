@@ -16,7 +16,8 @@ class Game:
         self.player_deck = self.create_deck()
         self.opponent_deck = self.create_deck()
         self.current_turn = 'player'
-        self.discard_pile = []
+        self.player_discard_pile = []
+        self.opponent_discard_pile = []
         self.player_health = 30
         self.opponent_health = 30
         self.round_number = 1
@@ -145,10 +146,12 @@ class Game:
         logger.info(f"New turn: {self.current_turn}")
         logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
-    def discard_card(self, card):
-        self.discard_pile.append(card)
-        logger.info(f"Card discarded: {card.to_dict()}")
-        logger.debug(f"Discard pile size: {len(self.discard_pile)}")
+    def discard_card(self, card, player):
+        if player == 'player':
+            self.player_discard_pile.append(card)
+        else:
+            self.opponent_discard_pile.append(card)
+        logger.info(f"Card discarded to {player}'s pile: {card.to_dict()}")
 
     def get_game_state(self):
         return {
@@ -158,7 +161,8 @@ class Game:
             'currentTurn': self.current_turn,
             'playerDeckCount': len(self.player_deck),
             'opponentDeckCount': len(self.opponent_deck),
-            'discardPileCount': len(self.discard_pile),
+            'playerDiscardPileCount': len(self.player_discard_pile),
+            'opponentDiscardPileCount': len(self.opponent_discard_pile),
             'playerHealth': self.player_health,
             'opponentHealth': self.opponent_health,
             'gameOver': self.game_over,
