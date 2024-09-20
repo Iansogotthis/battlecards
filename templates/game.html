@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle TCG - Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="game-board">
+        <div class="opponent-area">
+            <div id="opponent-hand" class="hand"></div>
+            <div class="deck"></div>
+        </div>
+        <div id="opponent-field" class="play-area"></div>
+        <div id="player-field" class="play-area"></div>
+        <div class="player-area">
+            <div id="player-hand" class="hand"></div>
+            <div class="deck"></div>
+        </div>
+        <div class="controls">
+            <button id="draw-button">Draw Card</button>
+            <button id="end-turn-button">End Turn</button>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
+</body>
+</html>
