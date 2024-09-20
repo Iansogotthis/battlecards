@@ -62,21 +62,43 @@ function updateTurnIndicator() {
     turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
 }
 
+function showError(message) {
+    const errorElement = document.getElementById('error-message');
+    errorElement.textContent = message;
+    setTimeout(() => {
+        errorElement.textContent = '';
+    }, 3000);
+}
+
 function drawCard() {
-    if (gameState.currentTurn !== 'player') return;
+    if (gameState.currentTurn !== 'player') {
+        showError("It's not your turn!");
+        return;
+    }
     
     fetch('/api/draw_card')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to draw card');
+            }
+            return response.json();
+        })
         .then(card => {
             gameState.playerHand.push(card);
             gameState.playerDeckCount--;
             updateGameBoard();
         })
-        .catch(error => console.error('Error drawing card:', error));
+        .catch(error => {
+            console.error('Error drawing card:', error);
+            showError('Failed to draw card. Please try again.');
+        });
 }
 
 function playCard(cardId) {
-    if (gameState.currentTurn !== 'player') return;
+    if (gameState.currentTurn !== 'player') {
+        showError("It's not your turn!");
+        return;
+    }
     
     fetch('/api/play_card', {
         method: 'POST',
@@ -85,7 +107,12 @@ function playCard(cardId) {
         },
         body: JSON.stringify({ card_id: cardId }),
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to play card');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 const cardIndex = gameState.playerHand.findIndex(card => card.id === cardId);
@@ -94,14 +121,25 @@ function playCard(cardId) {
                 updateGameBoard();
             }
         })
-        .catch(error => console.error('Error playing card:', error));
+        .catch(error => {
+            console.error('Error playing card:', error);
+            showError('Failed to play card. Please try again.');
+        });
 }
 
 function endTurn() {
-    if (gameState.currentTurn !== 'player') return;
+    if (gameState.currentTurn !== 'player') {
+        showError("It's not your turn!");
+        return;
+    }
     
     fetch('/api/end_turn')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to end turn');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 gameState.currentTurn = 'opponent';
@@ -109,16 +147,27 @@ function endTurn() {
                 setTimeout(() => {
                     ai.playTurn();
                     fetch('/api/game_state')
-                        .then(response => response.json())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch game state');
+                            }
+                            return response.json();
+                        })
                         .then(newState => {
                             gameState = newState;
                             updateGameBoard();
                         })
-                        .catch(error => console.error('Error fetching game state:', error));
+                        .catch(error => {
+                            console.error('Error fetching game state:', error);
+                            showError('Failed to update game state. Please refresh the page.');
+                        });
                 }, 1000);
             }
         })
-        .catch(error => console.error('Error ending turn:', error));
+        .catch(error => {
+            console.error('Error ending turn:', error);
+            showError('Failed to end turn. Please try again.');
+        });
 }
 
 // Event listeners
@@ -132,4 +181,15 @@ updateGameBoard();
 socket.on('update_game_state', (newState) => {
     gameState = newState;
     updateGameBoard();
+});
+
+// Error handling for socket connection
+socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
+    showError('Connection error. Please refresh the page.');
+});
+
+socket.on('connect_timeout', (timeout) => {
+    console.error('Socket connection timeout:', timeout);
+    showError('Connection timeout. Please refresh the page.');
 });

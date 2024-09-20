@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="game-board">
+        <div id="turn-indicator" class="turn-indicator"></div>
         <div class="opponent-area">
             <div id="opponent-hand" class="hand"></div>
             <div class="deck">
@@ -26,8 +27,8 @@
             <button id="draw-button">Draw Card</button>
             <button id="end-turn-button">End Turn</button>
         </div>
-        <div id="turn-indicator" class="turn-indicator"></div>
     </div>
+    <div id="error-message" style="color: red; text-align: center; margin-top: 10px;"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>

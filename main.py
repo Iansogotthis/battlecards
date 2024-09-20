@@ -24,30 +24,45 @@ def game_page():
 
 @app.route('/api/draw_card')
 def draw_card():
-    card = game.draw_card('player')
-    if card:
-        socketio.emit('update_game_state', game.get_game_state())
-        return jsonify(card.to_dict())
-    return jsonify({'error': 'No cards left in the deck'}), 400
+    try:
+        card = game.draw_card('player')
+        if card:
+            socketio.emit('update_game_state', game.get_game_state())
+            return jsonify(card.to_dict()), 200
+        return jsonify({'error': 'No cards left in the deck'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/play_card', methods=['POST'])
 def play_card():
-    card_id = request.json['card_id']
-    success = game.play_card(card_id, 'player')
-    if success:
-        socketio.emit('update_game_state', game.get_game_state())
-        return jsonify({'success': True})
-    return jsonify({'error': 'Failed to play card'}), 400
+    try:
+        card_id = request.json.get('card_id')
+        if card_id is None:
+            return jsonify({'error': 'Missing card_id in request'}), 400
+        
+        success = game.play_card(card_id, 'player')
+        if success:
+            socketio.emit('update_game_state', game.get_game_state())
+            return jsonify({'success': True}), 200
+        return jsonify({'error': 'Failed to play card'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/end_turn')
 def end_turn():
-    game.end_turn()
-    socketio.emit('update_game_state', game.get_game_state())
-    return jsonify({'success': True})
+    try:
+        game.end_turn()
+        socketio.emit('update_game_state', game.get_game_state())
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/game_state')
 def get_game_state():
-    return jsonify(game.get_game_state())
+    try:
+        return jsonify(game.get_game_state()), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @socketio.on('connect')
 def handle_connect():
