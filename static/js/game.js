@@ -106,8 +106,12 @@ function drawCard() {
         })
         .then(card => {
             console.log('Card drawn:', card);
+            if (!gameState.playerHand) {
+                gameState.playerHand = [];
+            }
             gameState.playerHand.push(card);
             gameState.playerDeckCount--;
+            console.log('Updated gameState after drawing card:', gameState);
             updateGameBoard();
         })
         .catch(error => {
