@@ -24,19 +24,20 @@ def index():
 def game_page():
     return render_template('game.html')
 
-@app.route('/api/draw_card')
+@app.route('/api/draw_card', methods=['POST'])
 def draw_card():
     try:
-        logger.info("Player attempting to draw a card")
-        card = game.draw_card('player')
+        player = request.json.get('player', 'player')  # Default to 'player' if not specified
+        logger.info(f"{player.capitalize()} attempting to draw a card")
+        card = game.draw_card(player)
         if card:
             new_state = game.get_game_state()
             socketio.emit('update_game_state', new_state)
-            logger.info(f"Player drew card: {card}")
+            logger.info(f"{player.capitalize()} drew card: {card}")
             logger.debug(f"New game state after drawing: {new_state}")
             return jsonify(card), 200
-        logger.warning("No cards left in the deck")
-        return jsonify({'error': 'No cards left in the deck'}), 400
+        logger.warning(f"No cards left in the {player}'s deck")
+        return jsonify({'error': f'No cards left in the {player}\'s deck'}), 400
     except Exception as e:
         logger.error(f"Error drawing card: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -45,15 +46,16 @@ def draw_card():
 def play_card():
     try:
         card_id = request.json.get('card_id')
+        player = request.json.get('player', 'player')  # Default to 'player' if not specified
         if card_id is None:
             logger.warning("Missing card_id in request")
             return jsonify({'error': 'Missing card_id in request'}), 400
         
-        success = game.play_card(card_id, 'player')
+        success = game.play_card(card_id, player)
         if success:
             new_state = game.get_game_state()
             socketio.emit('update_game_state', new_state)
-            logger.info(f"Player played card: {card_id}")
+            logger.info(f"{player.capitalize()} played card: {card_id}")
             logger.debug(f"New game state after playing card: {new_state}")
             return jsonify({'success': True}), 200
         logger.warning(f"Failed to play card: {card_id}")

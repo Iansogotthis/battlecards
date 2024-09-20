@@ -13,7 +13,13 @@ class AI {
 
     drawCard() {
         console.log('AI is attempting to draw a card');
-        return fetch('/api/draw_card')
+        return fetch('/api/draw_card', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ player: 'opponent' }),
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to draw card');
@@ -44,7 +50,7 @@ class AI {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ card_id: bestCard.id }),
+                body: JSON.stringify({ card_id: bestCard.id, player: 'opponent' }),
             })
                 .then(response => {
                     if (!response.ok) {
