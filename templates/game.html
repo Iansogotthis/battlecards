@@ -9,12 +9,18 @@
 <body>
     <div id="loading-indicator" class="loading">Loading game...</div>
     <div id="error-message" class="error-message" style="display: none;"></div>
+    <div id="game-over-message" class="game-over-message" style="display: none;"></div>
     <div class="game-board" style="display: none;">
         <div id="turn-indicator" class="turn-indicator"></div>
+        <div id="round-indicator" class="round-indicator"></div>
         <div class="opponent-area">
             <div id="opponent-hand" class="hand"></div>
             <div class="deck">
                 <span id="opponent-deck-count">30</span>
+            </div>
+            <div class="health-bar">
+                <span>Opponent Health:</span>
+                <span id="opponent-health">30</span>
             </div>
         </div>
         <div id="opponent-field" class="play-area"></div>
@@ -23,6 +29,10 @@
             <div id="player-hand" class="hand"></div>
             <div class="deck">
                 <span id="player-deck-count">30</span>
+            </div>
+            <div class="health-bar">
+                <span>Player Health:</span>
+                <span id="player-health">30</span>
             </div>
         </div>
         <div class="discard-pile">

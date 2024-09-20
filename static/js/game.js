@@ -7,7 +7,11 @@ let gameState = {
     currentTurn: 'player',
     playerDeckCount: 30,
     opponentDeckCount: 30,
-    discardPileCount: 0
+    discardPileCount: 0,
+    playerHealth: 30,
+    opponentHealth: 30,
+    gameOver: false,
+    roundNumber: 1
 };
 
 const ai = new AI(gameState);
@@ -22,6 +26,9 @@ function updateGameBoard() {
     updateDeckCounts();
     updateDiscardPile();
     updateTurnIndicator();
+    updateHealth();
+    updateRoundIndicator();
+    checkGameOver();
 }
 
 function updateHand() {
@@ -65,6 +72,7 @@ function createCardElement(card) {
             <span>DEF: ${card.defense}</span>
         </div>
         <div class="card-type">${card.type}</div>
+        <div class="card-effect">Effect: ${card.effect}</div>
     `;
     return cardElement;
 }
@@ -101,6 +109,33 @@ function updateTurnIndicator() {
     const turnIndicator = document.getElementById('turn-indicator');
     turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
     console.log('Turn indicator updated:', turnIndicator.textContent);
+}
+
+function updateHealth() {
+    const playerHealth = document.getElementById('player-health');
+    const opponentHealth = document.getElementById('opponent-health');
+    playerHealth.textContent = gameState.playerHealth;
+    opponentHealth.textContent = gameState.opponentHealth;
+}
+
+function updateRoundIndicator() {
+    const roundIndicator = document.getElementById('round-indicator');
+    roundIndicator.textContent = `Round: ${gameState.roundNumber}`;
+}
+
+function checkGameOver() {
+    if (gameState.gameOver) {
+        const gameOverMessage = document.getElementById('game-over-message');
+        gameOverMessage.style.display = 'block';
+        gameOverMessage.textContent = gameState.playerHealth <= 0 ? 'Game Over: You Lose!' : 'Game Over: You Win!';
+        disableGameControls();
+    }
+}
+
+function disableGameControls() {
+    document.getElementById('draw-button').disabled = true;
+    document.getElementById('play-button').disabled = true;
+    document.getElementById('end-turn-button').disabled = true;
 }
 
 function showError(message) {
@@ -201,12 +236,10 @@ function playCard() {
                     // Animate the card being played
                     const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
                     if (cardElement) {
-                        cardElement.classList.add('discarded');
-                        cardElement.style.opacity = '1';
-                        cardElement.style.transition = 'opacity 0.5s';
+                        cardElement.classList.add('card-played');
                         setTimeout(() => {
-                            cardElement.style.opacity = '0';
-                        }, 0);
+                            cardElement.classList.remove('card-played');
+                        }, 500);
                     }
                     updateGameBoard();
                 } else {
@@ -230,15 +263,7 @@ function endTurn() {
         return;
     }
     
-    fetch('/api/clear_fields')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                return fetch('/api/end_turn');
-            } else {
-                throw new Error('Failed to clear fields');
-            }
-        })
+    fetch('/api/end_turn')
         .then(response => response.json())
         .then(data => {
             console.log('Turn ended successfully:', data);
@@ -272,6 +297,10 @@ function resetGame() {
                 gameState = data.new_state;
                 selectedCard = null;
                 updateGameBoard();
+                document.getElementById('game-over-message').style.display = 'none';
+                document.getElementById('draw-button').disabled = false;
+                document.getElementById('play-button').disabled = false;
+                document.getElementById('end-turn-button').disabled = false;
             }
         })
         .catch(error => {
