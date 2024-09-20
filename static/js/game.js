@@ -11,6 +11,8 @@ let gameState = {
 
 const ai = new AI(gameState);
 
+let selectedCard = null;
+
 function updateGameBoard() {
     console.log('Updating game board with state:', gameState);
     updateHand();
@@ -30,7 +32,7 @@ function updateHand() {
         );
         gameState.playerHand.forEach(card => {
             const cardElement = createCardElement(card);
-            cardElement.onclick = () => playCard(card.id);
+            cardElement.onclick = (event) => selectCard(event, card.id);
             handElement.appendChild(cardElement);
         });
     } else {
@@ -54,6 +56,7 @@ function updateField(fieldId, fieldCards) {
 function createCardElement(card) {
     const cardElement = document.createElement('div');
     cardElement.className = 'card';
+    cardElement.setAttribute('data-card-id', card.id);
     cardElement.innerHTML = `
         <div class="card-name">${card.name}</div>
         <div class="card-stats">
@@ -63,6 +66,25 @@ function createCardElement(card) {
         <div class="card-type">${card.type}</div>
     `;
     return cardElement;
+}
+
+function selectCard(event, cardId) {
+    event.stopPropagation();
+    const clickedCard = event.currentTarget;
+    
+    // Remove selection from previously selected card
+    if (selectedCard) {
+        selectedCard.classList.remove('selected-card');
+    }
+    
+    // If the clicked card is already selected, deselect it
+    if (selectedCard === clickedCard) {
+        selectedCard = null;
+    } else {
+        // Select the new card
+        clickedCard.classList.add('selected-card');
+        selectedCard = clickedCard;
+    }
 }
 
 function updateDeckCounts() {
@@ -131,12 +153,19 @@ function drawCard() {
         });
 }
 
-function playCard(cardId) {
-    console.log('Attempting to play card:', cardId);
+function playCard() {
+    console.log('Attempting to play card');
     if (gameState.currentTurn !== 'player') {
         showError("It's not your turn!");
         return;
     }
+    
+    if (!selectedCard) {
+        showError("Please select a card to play");
+        return;
+    }
+    
+    const cardId = selectedCard.getAttribute('data-card-id');
     
     fetch('/api/play_card', {
         method: 'POST',
@@ -154,12 +183,13 @@ function playCard(cardId) {
         .then(data => {
             console.log('Card played successfully:', data);
             if (data.success) {
-                const cardIndex = gameState.playerHand.findIndex(card => card.id === cardId);
+                const cardIndex = gameState.playerHand.findIndex(card => card.id === parseInt(cardId));
                 const playedCard = gameState.playerHand.splice(cardIndex, 1)[0];
                 if (!Array.isArray(gameState.playerField)) {
                     gameState.playerField = [];
                 }
                 gameState.playerField.push(playedCard);
+                selectedCard = null;
                 updateGameBoard();
             }
         })
@@ -213,6 +243,7 @@ function resetGame() {
             console.log('Game reset successfully:', data);
             if (data.success) {
                 gameState = data.new_state;
+                selectedCard = null;
                 updateGameBoard();
             }
         })
@@ -260,11 +291,13 @@ function hideLoadingIndicator() {
 window.onload = function() {
     console.log('Window loaded, initializing game...');
     const drawButton = document.getElementById('draw-button');
+    const playButton = document.getElementById('play-button');
     const endTurnButton = document.getElementById('end-turn-button');
     const resetButton = document.getElementById('reset-button');
     
-    if (drawButton && endTurnButton && resetButton) {
+    if (drawButton && playButton && endTurnButton && resetButton) {
         drawButton.addEventListener('click', drawCard);
+        playButton.addEventListener('click', playCard);
         endTurnButton.addEventListener('click', endTurn);
         resetButton.addEventListener('click', resetGame);
         console.log('Event listeners attached to buttons');

@@ -38,12 +38,17 @@ body {
     justify-content: space-between;
     padding: 5px;
     cursor: pointer;
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .card:hover {
     transform: translateY(-10px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card.selected-card {
+    border: 3px solid #4CAF50;
+    box-shadow: 0 0 10px #4CAF50;
 }
 
 .card-name {
