@@ -6,7 +6,8 @@ let gameState = {
     opponentField: [],
     currentTurn: 'player',
     playerDeckCount: 30,
-    opponentDeckCount: 30
+    opponentDeckCount: 30,
+    discardPileCount: 0
 };
 
 const ai = new AI(gameState);
@@ -19,6 +20,7 @@ function updateGameBoard() {
     updateField('player-field', gameState.playerField);
     updateField('opponent-field', gameState.opponentField);
     updateDeckCounts();
+    updateDiscardPile();
     updateTurnIndicator();
 }
 
@@ -88,6 +90,11 @@ function updateDeckCounts() {
     const opponentDeckCount = document.getElementById('opponent-deck-count');
     playerDeckCount.textContent = gameState.playerDeckCount;
     opponentDeckCount.textContent = gameState.opponentDeckCount;
+}
+
+function updateDiscardPile() {
+    const discardPileCount = document.getElementById('discard-pile-count');
+    discardPileCount.textContent = gameState.discardPileCount;
 }
 
 function updateTurnIndicator() {
@@ -190,7 +197,20 @@ function playCard() {
                     gameState.playerField.push(playedCard);
                     selectedCard.classList.remove('selected-card');
                     selectedCard = null;
-                    updateGameBoard();
+                    
+                    // Animate the card being discarded
+                    const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
+                    if (cardElement) {
+                        cardElement.classList.add('discarded');
+                        setTimeout(() => {
+                            cardElement.remove();
+                            gameState.discardPileCount++;
+                            updateGameBoard();
+                        }, 500);
+                    } else {
+                        gameState.discardPileCount++;
+                        updateGameBoard();
+                    }
                 } else {
                     console.error('Card not found in player hand:', cardId);
                 }

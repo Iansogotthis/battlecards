@@ -16,6 +16,7 @@ class Game:
         self.player_deck = self.create_deck()
         self.opponent_deck = self.create_deck()
         self.current_turn = 'player'
+        self.discard_pile = []  # Initialize the discard pile
         logger.info("Game reset. Starting with player's turn.")
 
     def create_deck(self):
@@ -76,11 +77,20 @@ class Game:
             field.append(card)
             logger.info(f"{player.capitalize()} played card: {card.to_dict()}")
             logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
+            
+            # Discard the card after playing
+            self.discard_card(card)
+            
             return True
         else:
             logger.warning(f"Card with id {card_id} not found in {player}'s hand")
             logger.debug(f"{player.capitalize()} hand: {[c.to_dict() for c in hand]}")
             return False
+
+    def discard_card(self, card):
+        self.discard_pile.append(card)
+        logger.info(f"Card discarded: {card.to_dict()}")
+        logger.debug(f"Discard pile size: {len(self.discard_pile)}")
 
     def end_turn(self):
         logger.info(f"Ending turn for {self.current_turn}")
@@ -96,4 +106,5 @@ class Game:
             'currentTurn': self.current_turn,
             'playerDeckCount': len(self.player_deck),
             'opponentDeckCount': len(self.opponent_deck),
+            'discardPileCount': len(self.discard_pile),
         }
