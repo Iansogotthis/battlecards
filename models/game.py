@@ -77,15 +77,6 @@ class Game:
             field.append(card)
             logger.info(f"{player.capitalize()} played card: {card.to_dict()}")
             logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
-            
-            # Discard the card after playing
-            self.discard_card(card)
-            
-            # Remove the card from the field
-            field.remove(card)
-            logger.info(f"Card removed from {player}'s field: {card.to_dict()}")
-            logger.debug(f"{player.capitalize()} field after removal: {[c.to_dict() for c in field]}")
-            
             return True
         else:
             logger.warning(f"Card with id {card_id} not found in {player}'s hand")
@@ -96,6 +87,12 @@ class Game:
         self.discard_pile.append(card)
         logger.info(f"Card discarded: {card.to_dict()}")
         logger.debug(f"Discard pile size: {len(self.discard_pile)}")
+
+    def clear_fields(self):
+        for card in self.player_field + self.opponent_field:
+            self.discard_card(card)
+        self.player_field.clear()
+        self.opponent_field.clear()
 
     def end_turn(self):
         logger.info(f"Ending turn for {self.current_turn}")

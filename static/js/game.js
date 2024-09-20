@@ -198,19 +198,17 @@ function playCard() {
                     selectedCard.classList.remove('selected-card');
                     selectedCard = null;
                     
-                    // Animate the card being discarded
+                    // Animate the card being played
                     const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
                     if (cardElement) {
                         cardElement.classList.add('discarded');
+                        cardElement.style.opacity = '1';
+                        cardElement.style.transition = 'opacity 0.5s';
                         setTimeout(() => {
-                            cardElement.remove();
-                            gameState.discardPileCount++;
-                            updateGameBoard();
-                        }, 500);
-                    } else {
-                        gameState.discardPileCount++;
-                        updateGameBoard();
+                            cardElement.style.opacity = '0';
+                        }, 0);
                     }
+                    updateGameBoard();
                 } else {
                     console.error('Card not found in player hand:', cardId);
                 }
@@ -232,13 +230,16 @@ function endTurn() {
         return;
     }
     
-    fetch('/api/end_turn')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to end turn');
+    fetch('/api/clear_fields')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                return fetch('/api/end_turn');
+            } else {
+                throw new Error('Failed to clear fields');
             }
-            return response.json();
         })
+        .then(response => response.json())
         .then(data => {
             console.log('Turn ended successfully:', data);
             if (data.success) {

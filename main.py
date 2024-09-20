@@ -123,6 +123,17 @@ def reset_game():
         logger.error(f"Error resetting game: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/clear_fields')
+def clear_fields():
+    try:
+        game.clear_fields()
+        new_state = game.get_game_state()
+        socketio.emit('update_game_state', new_state)
+        return jsonify({'success': True, 'new_state': new_state}), 200
+    except Exception as e:
+        logger.error(f"Error clearing fields: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @socketio.on('connect')
 def handle_connect():
     logger.info('Client connected')
