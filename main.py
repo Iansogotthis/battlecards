@@ -9,14 +9,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with a real secret key in production
 socketio = SocketIO(app)
 
-# Set up logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Initialize the database
 init_db()
 
-# Create a game instance
 game = Game()
 
 @app.route('/')
@@ -87,6 +84,18 @@ def get_game_state():
         return jsonify(state), 200
     except Exception as e:
         logger.error(f"Error getting game state: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reset_game')
+def reset_game():
+    try:
+        game.reset_game()
+        new_state = game.get_game_state()
+        socketio.emit('update_game_state', new_state)
+        logger.info("Game reset successfully")
+        return jsonify({'success': True, 'new_state': new_state}), 200
+    except Exception as e:
+        logger.error(f"Error resetting game: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @socketio.on('connect')

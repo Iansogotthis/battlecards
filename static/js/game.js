@@ -169,12 +169,11 @@ function endTurn() {
         .then(data => {
             console.log('Turn ended successfully:', data);
             if (data.success) {
-                gameState.currentTurn = 'opponent';
+                gameState = data.new_state;
                 updateGameBoard();
                 console.log('Turn changed to opponent, triggering AI turn');
                 setTimeout(() => {
                     ai.playTurn();
-                    fetchGameState();
                 }, 1000);
             }
         })
@@ -184,34 +183,42 @@ function endTurn() {
         });
 }
 
+function resetGame() {
+    console.log('Resetting game');
+    fetch('/api/reset_game')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to reset game');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Game reset successfully:', data);
+            if (data.success) {
+                gameState = data.new_state;
+                updateGameBoard();
+            }
+        })
+        .catch(error => {
+            console.error('Error resetting game:', error);
+            showError('Failed to reset game. Please try again.');
+        });
+}
+
 function fetchGameState() {
     console.log('Fetching game state');
-    const timeoutDuration = 10000; // 10 seconds timeout
-    
-    const fetchPromise = fetch('/api/game_state')
+    fetch('/api/game_state')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch game state');
             }
             return response.json();
-        });
-    
-    const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Fetch game state timeout')), timeoutDuration)
-    );
-    
-    Promise.race([fetchPromise, timeoutPromise])
+        })
         .then(newState => {
             console.log('New game state received:', newState);
-            if (newState && newState.playerHand && newState.playerField && newState.opponentField && newState.currentTurn) {
-                gameState = newState;
-                console.log('Current turn after fetching game state:', gameState.currentTurn);
-                updateGameBoard();
-                hideLoadingIndicator();
-            } else {
-                console.error('Received invalid game state:', newState);
-                showError('Received invalid game state. Please refresh the page.');
-            }
+            gameState = newState;
+            updateGameBoard();
+            hideLoadingIndicator();
         })
         .catch(error => {
             console.error('Error fetching game state:', error);
@@ -238,13 +245,15 @@ window.onload = function() {
     console.log('Window loaded, initializing game...');
     const drawButton = document.getElementById('draw-button');
     const endTurnButton = document.getElementById('end-turn-button');
+    const resetButton = document.getElementById('reset-button');
     
-    if (drawButton && endTurnButton) {
+    if (drawButton && endTurnButton && resetButton) {
         drawButton.addEventListener('click', drawCard);
         endTurnButton.addEventListener('click', endTurn);
+        resetButton.addEventListener('click', resetGame);
         console.log('Event listeners attached to buttons');
     } else {
-        console.error('Failed to find draw or end turn buttons');
+        console.error('Failed to find game buttons');
     }
 
     // Fetch initial game state
@@ -254,14 +263,8 @@ window.onload = function() {
 // Socket event handlers
 socket.on('update_game_state', (newState) => {
     console.log('Received updated game state:', newState);
-    if (newState && newState.playerHand && newState.playerField && newState.opponentField && newState.currentTurn) {
-        gameState = newState;
-        console.log('Current turn after socket update:', gameState.currentTurn);
-        updateGameBoard();
-    } else {
-        console.error('Received invalid game state from socket:', newState);
-        showError('Received invalid game state. Please refresh the page.');
-    }
+    gameState = newState;
+    updateGameBoard();
 });
 
 // Error handling for socket connection

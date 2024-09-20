@@ -6,17 +6,19 @@ logger = logging.getLogger(__name__)
 
 class Game:
     def __init__(self):
+        self.reset_game()
+
+    def reset_game(self):
         self.player_hand = []
         self.player_field = []
         self.opponent_hand = []
         self.opponent_field = []
         self.player_deck = self.create_deck()
         self.opponent_deck = self.create_deck()
-        self.current_turn = 'player'  # Ensure the game starts with the player's turn
-        logger.info("Game initialized. Starting with player's turn.")
+        self.current_turn = 'player'
+        logger.info("Game reset. Starting with player's turn.")
 
     def create_deck(self):
-        # Create a sample deck of 30 cards
         deck = []
         for i in range(30):
             card = Card(
@@ -31,7 +33,6 @@ class Game:
         return deck
 
     def draw_card(self, player):
-        """Draw a card from the player's or opponent's deck"""
         logger.info(f"{player} is drawing a card")
         if player == 'player':
             if self.player_deck:
@@ -51,7 +52,6 @@ class Game:
         return None
 
     def play_card(self, card_id, player):
-        """Play a card from the player's or opponent's hand to their field"""
         logger.info(f"{player} is playing card with id: {card_id}")
         if player == 'player':
             card = next((card for card in self.player_hand if card.id == card_id), None)
@@ -73,11 +73,9 @@ class Game:
         return False
 
     def end_turn(self):
-        """End the current turn and switch to the other player"""
         logger.info(f"Ending turn for {self.current_turn}")
         self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
         logger.info(f"New turn: {self.current_turn}")
-        # Draw a card for the player whose turn is starting
         self.draw_card(self.current_turn)
         logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
