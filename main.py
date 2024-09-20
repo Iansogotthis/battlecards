@@ -24,23 +24,35 @@ def game_page():
 
 @app.route('/api/draw_card')
 def draw_card():
-    card = game.draw_card()
-    return jsonify(card.to_dict())
+    card = game.draw_card('player')
+    if card:
+        socketio.emit('update_game_state', game.get_game_state())
+        return jsonify(card.to_dict())
+    return jsonify({'error': 'No cards left in the deck'}), 400
 
 @app.route('/api/play_card', methods=['POST'])
 def play_card():
     card_id = request.json['card_id']
-    success = game.play_card(card_id)
-    return jsonify({'success': success})
+    success = game.play_card(card_id, 'player')
+    if success:
+        socketio.emit('update_game_state', game.get_game_state())
+        return jsonify({'success': True})
+    return jsonify({'error': 'Failed to play card'}), 400
 
 @app.route('/api/end_turn')
 def end_turn():
     game.end_turn()
+    socketio.emit('update_game_state', game.get_game_state())
     return jsonify({'success': True})
+
+@app.route('/api/game_state')
+def get_game_state():
+    return jsonify(game.get_game_state())
 
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
+    socketio.emit('update_game_state', game.get_game_state())
 
 @socketio.on('disconnect')
 def handle_disconnect():

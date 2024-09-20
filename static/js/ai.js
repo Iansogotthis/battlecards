@@ -1,25 +1,31 @@
 class AI {
-    constructor() {
-        this.hand = [];
-        this.field = [];
-    }
-
-    drawCard(card) {
-        this.hand.push(card);
+    constructor(game) {
+        this.game = game;
     }
 
     playTurn() {
-        // Simple AI logic: play the strongest card in hand
-        if (this.hand.length > 0) {
-            const strongestCard = this.hand.reduce((prev, current) => 
-                (prev.attack > current.attack) ? prev : current
-            );
-            const cardIndex = this.hand.findIndex(card => card.id === strongestCard.id);
-            const playedCard = this.hand.splice(cardIndex, 1)[0];
-            this.field.push(playedCard);
-            return playedCard;
+        // Draw a card
+        this.game.drawCard('opponent');
+
+        // Play the best card possible
+        const playableCard = this.chooseBestCard();
+        if (playableCard) {
+            this.game.playCard(playableCard.id, 'opponent');
         }
-        return null;
+
+        // End the turn
+        this.game.endTurn();
+    }
+
+    chooseBestCard() {
+        if (this.game.opponent_hand.length === 0) {
+            return null;
+        }
+
+        // Simple strategy: Play the card with the highest attack value
+        return this.game.opponent_hand.reduce((bestCard, currentCard) => 
+            currentCard.attack > bestCard.attack ? currentCard : bestCard
+        );
     }
 }
 

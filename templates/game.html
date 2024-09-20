@@ -10,21 +10,26 @@
     <div class="game-board">
         <div class="opponent-area">
             <div id="opponent-hand" class="hand"></div>
-            <div class="deck"></div>
+            <div class="deck">
+                <span id="opponent-deck-count">30</span>
+            </div>
         </div>
         <div id="opponent-field" class="play-area"></div>
         <div id="player-field" class="play-area"></div>
         <div class="player-area">
             <div id="player-hand" class="hand"></div>
-            <div class="deck"></div>
+            <div class="deck">
+                <span id="player-deck-count">30</span>
+            </div>
         </div>
         <div class="controls">
             <button id="draw-button">Draw Card</button>
             <button id="end-turn-button">End Turn</button>
         </div>
+        <div id="turn-indicator" class="turn-indicator"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
 </body>
 </html>
