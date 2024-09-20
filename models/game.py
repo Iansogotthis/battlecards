@@ -38,6 +38,7 @@ class Game:
             if self.player_deck:
                 card = self.player_deck.pop()
                 self.player_hand.append(card)
+                self.remove_duplicates(self.player_hand)
                 logger.info(f"Player drew card: {card.to_dict()}")
                 logger.debug(f"Player hand after drawing: {[c.to_dict() for c in self.player_hand]}")
                 return card.to_dict()
@@ -45,11 +46,16 @@ class Game:
             if self.opponent_deck:
                 card = self.opponent_deck.pop()
                 self.opponent_hand.append(card)
+                self.remove_duplicates(self.opponent_hand)
                 logger.info(f"Opponent drew card: {card.to_dict()}")
                 logger.debug(f"Opponent hand after drawing: {[c.to_dict() for c in self.opponent_hand]}")
                 return card.to_dict()
         logger.warning(f"No cards left in the {player}'s deck")
         return None
+
+    def remove_duplicates(self, hand):
+        seen = set()
+        hand[:] = [card for card in hand if card.id not in seen and not seen.add(card.id)]
 
     def play_card(self, card_id, player):
         logger.info(f"{player} is playing card with id: {card_id}")

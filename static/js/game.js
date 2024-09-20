@@ -24,6 +24,10 @@ function updateHand() {
     const handElement = document.getElementById('player-hand');
     handElement.innerHTML = '';
     if (Array.isArray(gameState.playerHand)) {
+        // Remove duplicate cards
+        gameState.playerHand = gameState.playerHand.filter((card, index, self) =>
+            index === self.findIndex((t) => t.id === card.id)
+        );
         gameState.playerHand.forEach(card => {
             const cardElement = createCardElement(card);
             cardElement.onclick = () => playCard(card.id);
@@ -112,9 +116,14 @@ function drawCard() {
             if (!Array.isArray(gameState.playerHand)) {
                 gameState.playerHand = [];
             }
-            gameState.playerHand.push(card);
-            gameState.playerDeckCount--;
-            updateGameBoard();
+            // Check for duplicates before adding the card
+            if (!gameState.playerHand.some(c => c.id === card.id)) {
+                gameState.playerHand.push(card);
+                gameState.playerDeckCount--;
+                updateGameBoard();
+            } else {
+                console.warn('Duplicate card detected, not adding to hand:', card);
+            }
         })
         .catch(error => {
             console.error('Error drawing card:', error);

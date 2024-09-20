@@ -35,12 +35,20 @@ def draw_card():
             logger.warning(f"Attempted to draw card out of turn. Current turn: {game.current_turn}")
             return jsonify({'error': "It's not your turn!"}), 400
         
+        logger.debug(f"Player hand before drawing: {[c.to_dict() for c in game.player_hand]}")
         card = game.draw_card(player)
         if card:
             new_state = game.get_game_state()
-            socketio.emit('update_game_state', new_state)
             logger.info(f"{player.capitalize()} drew card: {card}")
+            logger.debug(f"Player hand after drawing: {[c.to_dict() for c in game.player_hand]}")
             logger.debug(f"New game state after drawing: {new_state}")
+            
+            # Check for duplicates in the player's hand
+            player_hand = new_state['playerHand']
+            unique_cards = {card['id']: card for card in player_hand}
+            new_state['playerHand'] = list(unique_cards.values())
+            
+            socketio.emit('update_game_state', new_state)
             return jsonify(card), 200
         logger.warning(f"No cards left in the {player}'s deck")
         return jsonify({'error': f'No cards left in the {player}\'s deck'}), 400
