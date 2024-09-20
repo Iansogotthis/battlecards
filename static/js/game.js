@@ -92,8 +92,16 @@ function drawCard() {
         return;
     }
     
-    fetch('/api/draw_card')
+    console.log('Sending POST request to /api/draw_card');
+    fetch('/api/draw_card', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ player: 'player' }),
+    })
         .then(response => {
+            console.log('Received response:', response);
             if (!response.ok) {
                 throw new Error('Failed to draw card');
             }
@@ -240,7 +248,6 @@ function hideLoadingIndicator() {
     }
 }
 
-// Event listeners
 window.onload = function() {
     console.log('Window loaded, initializing game...');
     const drawButton = document.getElementById('draw-button');
@@ -256,18 +263,15 @@ window.onload = function() {
         console.error('Failed to find game buttons');
     }
 
-    // Fetch initial game state
     fetchGameState();
 };
 
-// Socket event handlers
 socket.on('update_game_state', (newState) => {
     console.log('Received updated game state:', newState);
     gameState = newState;
     updateGameBoard();
 });
 
-// Error handling for socket connection
 socket.on('connect_error', (error) => {
     console.error('Socket connection error:', error);
     showError('Connection error. Please refresh the page.');

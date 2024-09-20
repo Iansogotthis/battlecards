@@ -27,8 +27,14 @@ def game_page():
 @app.route('/api/draw_card', methods=['POST'])
 def draw_card():
     try:
-        player = request.json.get('player', 'player')  # Default to 'player' if not specified
-        logger.info(f"{player.capitalize()} attempting to draw a card")
+        logger.info("Received draw_card request")
+        player = request.json.get('player', 'player')
+        logger.info(f"Player attempting to draw a card: {player}")
+        
+        if game.current_turn != player:
+            logger.warning(f"Attempted to draw card out of turn. Current turn: {game.current_turn}")
+            return jsonify({'error': "It's not your turn!"}), 400
+        
         card = game.draw_card(player)
         if card:
             new_state = game.get_game_state()
