@@ -82,13 +82,11 @@ class Game:
         logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
     def get_game_state(self):
-        state = {
-            'player_hand': [card.to_dict() for card in self.player_hand],
-            'player_field': [card.to_dict() for card in self.player_field],
-            'opponent_field': [card.to_dict() for card in self.opponent_field],
-            'current_turn': self.current_turn,
-            'player_deck_count': len(self.player_deck),
-            'opponent_deck_count': len(self.opponent_deck),
+        return {
+            'playerHand': [card.to_dict() for card in self.player_hand],
+            'playerField': [card.to_dict() for card in self.player_field],
+            'opponentField': [card.to_dict() for card in self.opponent_field],
+            'currentTurn': self.current_turn,
+            'playerDeckCount': len(self.player_deck),
+            'opponentDeckCount': len(self.opponent_deck),
         }
-        logger.debug(f"Current game state: {state}")
-        return state

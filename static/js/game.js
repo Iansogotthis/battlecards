@@ -203,10 +203,15 @@ function fetchGameState() {
     Promise.race([fetchPromise, timeoutPromise])
         .then(newState => {
             console.log('New game state received:', newState);
-            gameState = newState;
-            console.log('Current turn after fetching game state:', gameState.currentTurn);
-            updateGameBoard();
-            hideLoadingIndicator();
+            if (newState && newState.playerHand && newState.playerField && newState.opponentField && newState.currentTurn) {
+                gameState = newState;
+                console.log('Current turn after fetching game state:', gameState.currentTurn);
+                updateGameBoard();
+                hideLoadingIndicator();
+            } else {
+                console.error('Received invalid game state:', newState);
+                showError('Received invalid game state. Please refresh the page.');
+            }
         })
         .catch(error => {
             console.error('Error fetching game state:', error);
@@ -249,9 +254,14 @@ window.onload = function() {
 // Socket event handlers
 socket.on('update_game_state', (newState) => {
     console.log('Received updated game state:', newState);
-    gameState = newState;
-    console.log('Current turn after socket update:', gameState.currentTurn);
-    updateGameBoard();
+    if (newState && newState.playerHand && newState.playerField && newState.opponentField && newState.currentTurn) {
+        gameState = newState;
+        console.log('Current turn after socket update:', gameState.currentTurn);
+        updateGameBoard();
+    } else {
+        console.error('Received invalid game state from socket:', newState);
+        showError('Received invalid game state. Please refresh the page.');
+    }
 });
 
 // Error handling for socket connection
