@@ -90,6 +90,7 @@ class Game:
             logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
             
             self.apply_card_effect(card, player)
+            self.discard_card(card, player)
             
             if self.player_health <= 0 or self.opponent_health <= 0:
                 self.game_over = True
