@@ -13,39 +13,37 @@ const ai = new AI(gameState);
 
 function updateGameBoard() {
     console.log('Updating game board with state:', gameState);
-    if (gameState.playerHand) updateHand();
-    if (gameState.playerField) updateField('player-field', gameState.playerField);
-    if (gameState.opponentField) updateField('opponent-field', gameState.opponentField);
+    updateHand();
+    updateField('player-field', gameState.playerField);
+    updateField('opponent-field', gameState.opponentField);
     updateDeckCounts();
     updateTurnIndicator();
 }
 
 function updateHand() {
     const handElement = document.getElementById('player-hand');
-    if (!handElement) {
-        console.error('Player hand element not found');
-        return;
-    }
     handElement.innerHTML = '';
-    gameState.playerHand.forEach(card => {
-        const cardElement = createCardElement(card);
-        cardElement.onclick = () => playCard(card.id);
-        handElement.appendChild(cardElement);
-    });
+    if (Array.isArray(gameState.playerHand)) {
+        gameState.playerHand.forEach(card => {
+            const cardElement = createCardElement(card);
+            cardElement.onclick = () => playCard(card.id);
+            handElement.appendChild(cardElement);
+        });
+    } else {
+        console.error('gameState.playerHand is not an array:', gameState.playerHand);
+    }
 }
 
 function updateField(fieldId, fieldCards) {
     const fieldElement = document.getElementById(fieldId);
-    if (!fieldElement) {
-        console.error(`Field element not found: ${fieldId}`);
-        return;
-    }
     fieldElement.innerHTML = '';
-    if (fieldCards) {
+    if (Array.isArray(fieldCards)) {
         fieldCards.forEach(card => {
             const cardElement = createCardElement(card);
             fieldElement.appendChild(cardElement);
         });
+    } else {
+        console.error(`${fieldId} is not an array:`, fieldCards);
     }
 }
 
@@ -53,12 +51,12 @@ function createCardElement(card) {
     const cardElement = document.createElement('div');
     cardElement.className = 'card';
     cardElement.innerHTML = `
-        <div class="card-name">${card.name || 'Unknown'}</div>
+        <div class="card-name">${card.name}</div>
         <div class="card-stats">
-            <span>ATK: ${card.attack || 0}</span>
-            <span>DEF: ${card.defense || 0}</span>
+            <span>ATK: ${card.attack}</span>
+            <span>DEF: ${card.defense}</span>
         </div>
-        <div class="card-type">${card.type || 'Unknown'}</div>
+        <div class="card-type">${card.type}</div>
     `;
     return cardElement;
 }
@@ -66,28 +64,24 @@ function createCardElement(card) {
 function updateDeckCounts() {
     const playerDeckCount = document.getElementById('player-deck-count');
     const opponentDeckCount = document.getElementById('opponent-deck-count');
-    if (playerDeckCount) playerDeckCount.textContent = gameState.playerDeckCount || 0;
-    if (opponentDeckCount) opponentDeckCount.textContent = gameState.opponentDeckCount || 0;
+    playerDeckCount.textContent = gameState.playerDeckCount;
+    opponentDeckCount.textContent = gameState.opponentDeckCount;
 }
 
 function updateTurnIndicator() {
     const turnIndicator = document.getElementById('turn-indicator');
-    if (turnIndicator) {
-        turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
-    }
+    turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
 }
 
 function showError(message) {
     console.error('Game error:', message);
     const errorElement = document.getElementById('error-message');
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-        setTimeout(() => {
-            errorElement.textContent = '';
-            errorElement.style.display = 'none';
-        }, 5000);
-    }
+    errorElement.textContent = message;
+    errorElement.style.display = 'block';
+    setTimeout(() => {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+    }, 5000);
 }
 
 function drawCard() {
@@ -106,12 +100,11 @@ function drawCard() {
         })
         .then(card => {
             console.log('Card drawn:', card);
-            if (!gameState.playerHand) {
+            if (!Array.isArray(gameState.playerHand)) {
                 gameState.playerHand = [];
             }
             gameState.playerHand.push(card);
             gameState.playerDeckCount--;
-            console.log('Updated gameState after drawing card:', gameState);
             updateGameBoard();
         })
         .catch(error => {
@@ -145,6 +138,9 @@ function playCard(cardId) {
             if (data.success) {
                 const cardIndex = gameState.playerHand.findIndex(card => card.id === cardId);
                 const playedCard = gameState.playerHand.splice(cardIndex, 1)[0];
+                if (!Array.isArray(gameState.playerField)) {
+                    gameState.playerField = [];
+                }
                 gameState.playerField.push(playedCard);
                 updateGameBoard();
             }
@@ -188,46 +184,22 @@ function endTurn() {
 
 function fetchGameState() {
     console.log('Fetching game state');
-    return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-            reject(new Error('Timeout: Failed to fetch game state'));
-        }, 10000); // 10 seconds timeout
-
-        fetch('/api/game_state')
-            .then(response => {
-                clearTimeout(timeout);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch game state');
-                }
-                return response.json();
-            })
-            .then(newState => {
-                console.log('New game state received:', newState);
-                gameState = newState;
-                updateGameBoard();
-                resolve(newState);
-            })
-            .catch(error => {
-                clearTimeout(timeout);
-                console.error('Error fetching game state:', error);
-                showError('Failed to update game state. Please refresh the page.');
-                reject(error);
-            });
-    });
-}
-
-function hideLoadingIndicator() {
-    const loadingIndicator = document.getElementById('loading-indicator');
-    if (loadingIndicator) {
-        loadingIndicator.style.display = 'none';
-    }
-}
-
-function showGameBoard() {
-    const gameBoard = document.querySelector('.game-board');
-    if (gameBoard) {
-        gameBoard.style.display = 'flex';
-    }
+    fetch('/api/game_state')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch game state');
+            }
+            return response.json();
+        })
+        .then(newState => {
+            console.log('New game state received:', newState);
+            gameState = newState;
+            updateGameBoard();
+        })
+        .catch(error => {
+            console.error('Error fetching game state:', error);
+            showError('Failed to update game state. Please refresh the page.');
+        });
 }
 
 // Event listeners
@@ -236,25 +208,11 @@ window.onload = function() {
     const drawButton = document.getElementById('draw-button');
     const endTurnButton = document.getElementById('end-turn-button');
     
-    if (drawButton && endTurnButton) {
-        drawButton.addEventListener('click', drawCard);
-        endTurnButton.addEventListener('click', endTurn);
-        console.log('Event listeners attached to buttons');
-    } else {
-        console.error('Failed to find draw or end turn buttons');
-    }
+    drawButton.addEventListener('click', drawCard);
+    endTurnButton.addEventListener('click', endTurn);
 
     // Fetch initial game state
-    fetchGameState()
-        .then(() => {
-            console.log('Game initialized successfully');
-            hideLoadingIndicator();
-            showGameBoard();
-        })
-        .catch(error => {
-            console.error('Failed to initialize game:', error);
-            showError('Failed to initialize game. Please refresh the page.');
-        });
+    fetchGameState();
 };
 
 // Socket event handlers

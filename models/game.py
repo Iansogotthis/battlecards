@@ -33,17 +33,18 @@ class Game:
         """Draw a card from the player's or opponent's deck"""
         logger.info(f"{player} is drawing a card")
         if player == 'player':
-            if len(self.player_deck) > 0:
+            if self.player_deck:
                 card = self.player_deck.pop()
                 self.player_hand.append(card)
                 logger.info(f"Player drew card: {card.to_dict()}")
                 logger.debug(f"Player hand after drawing: {[c.to_dict() for c in self.player_hand]}")
                 return card
         elif player == 'opponent':
-            if len(self.opponent_deck) > 0:
+            if self.opponent_deck:
                 card = self.opponent_deck.pop()
                 self.opponent_hand.append(card)
                 logger.info(f"Opponent drew card: {card.to_dict()}")
+                logger.debug(f"Opponent hand after drawing: {[c.to_dict() for c in self.opponent_hand]}")
                 return card
         logger.warning(f"No cards left in the {player}'s deck")
         return None
@@ -65,6 +66,7 @@ class Game:
                 self.opponent_hand.remove(card)
                 self.opponent_field.append(card)
                 logger.info(f"Opponent played card: {card.to_dict()}")
+                logger.debug(f"Opponent field after playing: {[c.to_dict() for c in self.opponent_field]}")
                 return True
         logger.warning(f"Failed to play card with id {card_id} for {player}")
         return False

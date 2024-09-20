@@ -4,28 +4,75 @@ class AI {
     }
 
     playTurn() {
+        console.log('AI is playing its turn');
         // Draw a card
-        this.game.drawCard('opponent');
+        this.drawCard();
 
         // Play the best card possible
-        const playableCard = this.chooseBestCard();
-        if (playableCard) {
-            this.game.playCard(playableCard.id, 'opponent');
-        }
+        this.playBestCard();
 
         // End the turn
-        this.game.endTurn();
+        this.endTurn();
     }
 
-    chooseBestCard() {
-        if (this.game.opponent_hand.length === 0) {
-            return null;
-        }
+    drawCard() {
+        console.log('AI is attempting to draw a card');
+        fetch('/api/draw_card')
+            .then(response => response.json())
+            .then(card => {
+                console.log('AI drew card:', card);
+                if (!this.game.opponentHand) {
+                    this.game.opponentHand = [];
+                }
+                this.game.opponentHand.push(card);
+                this.game.opponentDeckCount--;
+            })
+            .catch(error => console.error('Error in AI drawing card:', error));
+    }
 
-        // Simple strategy: Play the card with the highest attack value
-        return this.game.opponent_hand.reduce((bestCard, currentCard) => 
-            currentCard.attack > bestCard.attack ? currentCard : bestCard
-        );
+    playBestCard() {
+        console.log('AI is choosing the best card to play');
+        if (this.game.opponentHand && this.game.opponentHand.length > 0) {
+            // Simple strategy: Play the card with the highest attack value
+            const bestCard = this.game.opponentHand.reduce((best, current) => 
+                current.attack > best.attack ? current : best
+            );
+
+            console.log('AI is playing card:', bestCard);
+            fetch('/api/play_card', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ card_id: bestCard.id }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const cardIndex = this.game.opponentHand.findIndex(card => card.id === bestCard.id);
+                        this.game.opponentHand.splice(cardIndex, 1);
+                        if (!this.game.opponentField) {
+                            this.game.opponentField = [];
+                        }
+                        this.game.opponentField.push(bestCard);
+                    }
+                })
+                .catch(error => console.error('Error in AI playing card:', error));
+        } else {
+            console.log('AI has no cards to play');
+        }
+    }
+
+    endTurn() {
+        console.log('AI is ending its turn');
+        fetch('/api/end_turn')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.game.currentTurn = 'player';
+                }
+            })
+            .catch(error => console.error('Error in AI ending turn:', error));
     }
 }
 
