@@ -139,6 +139,15 @@ button:hover {
     animation: card-play 0.5s ease-out;
 }
 
+@keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.discarded {
+    animation: fade-out 0.5s forwards;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .game-board {

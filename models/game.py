@@ -81,6 +81,11 @@ class Game:
             # Discard the card after playing
             self.discard_card(card)
             
+            # Remove the card from the field
+            field.remove(card)
+            logger.info(f"Card removed from {player}'s field: {card.to_dict()}")
+            logger.debug(f"{player.capitalize()} field after removal: {[c.to_dict() for c in field]}")
+            
             return True
         else:
             logger.warning(f"Card with id {card_id} not found in {player}'s hand")
