@@ -18,6 +18,23 @@ const ai = new AI(gameState);
 
 let selectedCard = null;
 
+function clearFieldsWithDelay() {
+    setTimeout(() => {
+        fetch('/api/clear_fields')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    gameState = data.new_state;
+                    updateGameBoard();
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing fields:', error);
+                showError('Failed to clear fields. Please try again.');
+            });
+    }, 2000); // 2 second delay
+}
+
 function updateGameBoard() {
     console.log('Updating game board with state:', gameState);
     updateHand();
@@ -29,6 +46,10 @@ function updateGameBoard() {
     updateHealth();
     updateRoundIndicator();
     checkGameOver();
+    
+    if (gameState.currentTurn === 'player' && gameState.roundNumber % 2 === 1) {
+        clearFieldsWithDelay();
+    }
 }
 
 function updateHand() {
@@ -233,7 +254,6 @@ function playCard() {
                     selectedCard.classList.remove('selected-card');
                     selectedCard = null;
                     
-                    // Animate the card being played
                     const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
                     if (cardElement) {
                         cardElement.classList.add('card-played');

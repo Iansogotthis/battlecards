@@ -88,10 +88,8 @@ class Game:
             logger.info(f"{player.capitalize()} played card: {card.to_dict()}")
             logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
             
-            # Apply card effect
             self.apply_card_effect(card, player)
             
-            # Check for game over condition
             if self.player_health <= 0 or self.opponent_health <= 0:
                 self.game_over = True
                 logger.info("Game over condition reached")
@@ -134,22 +132,12 @@ class Game:
             self.player_health = target_health
             self.opponent_health = player_health
 
-    def clear_fields(self):
-        if self.current_turn == 'player' and self.round_number % 2 == 0:
-            logger.info(f"Clearing fields at the end of round {self.round_number}")
-            for card in self.player_field + self.opponent_field:
-                self.discard_card(card)
-            self.player_field.clear()
-            self.opponent_field.clear()
-            logger.info("Fields cleared")
-
     def end_turn(self):
         logger.info(f"Ending turn for {self.current_turn}")
         self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
         if self.current_turn == 'player':
             self.round_number += 1
             logger.info(f"New round: {self.round_number}")
-            self.clear_fields()
         
         if self.game_over:
             logger.info("Game over detected during end turn")
