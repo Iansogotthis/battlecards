@@ -184,22 +184,45 @@ function endTurn() {
 
 function fetchGameState() {
     console.log('Fetching game state');
-    fetch('/api/game_state')
+    const timeoutDuration = 10000; // 10 seconds timeout
+    
+    const fetchPromise = fetch('/api/game_state')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch game state');
             }
             return response.json();
-        })
+        });
+    
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Fetch game state timeout')), timeoutDuration)
+    );
+    
+    Promise.race([fetchPromise, timeoutPromise])
         .then(newState => {
             console.log('New game state received:', newState);
             gameState = newState;
             updateGameBoard();
+            hideLoadingIndicator();
         })
         .catch(error => {
             console.error('Error fetching game state:', error);
             showError('Failed to update game state. Please refresh the page.');
+            hideLoadingIndicator();
         });
+}
+
+function hideLoadingIndicator() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const gameBoard = document.querySelector('.game-board');
+    
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+    
+    if (gameBoard) {
+        gameBoard.style.display = 'flex';
+    }
 }
 
 // Event listeners
@@ -208,8 +231,13 @@ window.onload = function() {
     const drawButton = document.getElementById('draw-button');
     const endTurnButton = document.getElementById('end-turn-button');
     
-    drawButton.addEventListener('click', drawCard);
-    endTurnButton.addEventListener('click', endTurn);
+    if (drawButton && endTurnButton) {
+        drawButton.addEventListener('click', drawCard);
+        endTurnButton.addEventListener('click', endTurn);
+        console.log('Event listeners attached to buttons');
+    } else {
+        console.error('Failed to find draw or end turn buttons');
+    }
 
     // Fetch initial game state
     fetchGameState();

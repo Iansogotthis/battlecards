@@ -81,8 +81,20 @@ def end_turn():
 @app.route('/api/game_state')
 def get_game_state():
     try:
+        logger.info("Fetching game state")
         state = game.get_game_state()
         logger.debug(f"Current game state: {state}")
+        
+        # Verify that the game state is valid
+        if not isinstance(state, dict):
+            raise ValueError("Game state is not a dictionary")
+        
+        required_keys = ['player_hand', 'player_field', 'opponent_field', 'current_turn', 'player_deck_count', 'opponent_deck_count']
+        for key in required_keys:
+            if key not in state:
+                raise ValueError(f"Game state is missing required key: {key}")
+        
+        logger.info("Game state fetched successfully")
         return jsonify(state), 200
     except Exception as e:
         logger.error(f"Error getting game state: {str(e)}")
