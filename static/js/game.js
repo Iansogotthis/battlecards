@@ -46,10 +46,6 @@ function updateGameBoard() {
     updateHealth();
     updateRoundIndicator();
     checkGameOver();
-    
-    if (gameState.currentTurn === 'player' && gameState.roundNumber % 2 === 1) {
-        clearFieldsWithDelay();
-    }
 }
 
 function updateHand() {
@@ -401,4 +397,22 @@ socket.on('connect_error', (error) => {
 socket.on('connect_timeout', (timeout) => {
     console.error('Socket connection timeout:', timeout);
     showError('Connection timeout. Please refresh the page.');
+});
+
+socket.on('clear_fields_countdown', () => {
+    console.log('Starting countdown to clear fields');
+    setTimeout(() => {
+        fetch('/api/clear_fields')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    gameState = data.new_state;
+                    updateGameBoard();
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing fields:', error);
+                showError('Failed to clear fields. Please try again.');
+            });
+    }, 2000);
 });

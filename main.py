@@ -95,6 +95,11 @@ def end_turn():
         new_state = game.get_game_state()
         logger.info(f"Turn ended. New turn: {new_state['currentTurn']}")
         socketio.emit('update_game_state', new_state)
+        
+        if new_state['currentTurn'] == 'player':
+            # AI turn just ended, schedule field clearing
+            socketio.emit('clear_fields_countdown')
+        
         logger.debug(f"New game state after ending turn: {new_state}")
         return jsonify({'success': True, 'new_state': new_state}), 200
     except Exception as e:

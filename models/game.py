@@ -164,3 +164,8 @@ class Game:
             'gameOver': self.game_over,
             'roundNumber': self.round_number,
         }
+
+    def clear_fields(self):
+        self.player_field.clear()
+        self.opponent_field.clear()
+        logger.info("Fields cleared")
