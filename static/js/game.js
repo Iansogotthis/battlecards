@@ -165,9 +165,10 @@ function checkGameOver() {
     if (gameState.gameOver) {
         const gameOverMessage = document.getElementById('game-over-message');
         const gameOverOverlay = document.getElementById('game-over-overlay');
+        const playAgainButton = document.getElementById('play-again-button');
         gameOverMessage.textContent = gameState.playerHealth <= 0 ? 'Game Over: You Lose!' : 'Game Over: You Win!';
-        gameOverMessage.style.display = 'block';
         gameOverOverlay.style.display = 'flex';
+        playAgainButton.style.display = 'block';
         disableGameControls();
     }
 }
@@ -345,7 +346,6 @@ function resetGame() {
                 gameState = data.new_state;
                 selectedCard = null;
                 updateGameBoard();
-                document.getElementById('game-over-message').style.display = 'none';
                 document.getElementById('game-over-overlay').style.display = 'none';
                 document.getElementById('draw-button').disabled = false;
                 document.getElementById('play-button').disabled = false;
@@ -399,12 +399,14 @@ window.onload = function() {
     const playButton = document.getElementById('play-button');
     const endTurnButton = document.getElementById('end-turn-button');
     const resetButton = document.getElementById('reset-button');
+    const playAgainButton = document.getElementById('play-again-button');
     
-    if (drawButton && playButton && endTurnButton && resetButton) {
+    if (drawButton && playButton && endTurnButton && resetButton && playAgainButton) {
         drawButton.addEventListener('click', drawCard);
         playButton.addEventListener('click', playCard);
         endTurnButton.addEventListener('click', endTurn);
         resetButton.addEventListener('click', resetGame);
+        playAgainButton.addEventListener('click', resetGame);
         console.log('Event listeners attached to buttons');
     } else {
         console.error('Failed to find game buttons');

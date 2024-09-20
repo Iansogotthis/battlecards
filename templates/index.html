@@ -7,8 +7,16 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>Welcome to Battle TCG</h1>
-    <p>This is a simple Trading Card Game where you can battle against an AI opponent.</p>
-    <a href="{{ url_for('game_page') }}">Start Game</a>
+    <div class="landing-page">
+        <h1>Welcome to Battle TCG</h1>
+        <p>Engage in epic card battles against an AI opponent!</p>
+        <ul>
+            <li>Draw cards from your deck</li>
+            <li>Play powerful creatures and spells</li>
+            <li>Use special effects to gain an advantage</li>
+            <li>Reduce your opponent's health to zero to win</li>
+        </ul>
+        <a href="{{ url_for('game_page') }}" class="start-button">Start Game</a>
+    </div>
 </body>
 </html>
