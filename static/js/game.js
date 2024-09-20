@@ -82,9 +82,11 @@ function showError(message) {
     const errorElement = document.getElementById('error-message');
     if (errorElement) {
         errorElement.textContent = message;
+        errorElement.style.display = 'block';
         setTimeout(() => {
             errorElement.textContent = '';
-        }, 3000);
+            errorElement.style.display = 'none';
+        }, 5000);
     }
 }
 
@@ -182,22 +184,46 @@ function endTurn() {
 
 function fetchGameState() {
     console.log('Fetching game state');
-    fetch('/api/game_state')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch game state');
-            }
-            return response.json();
-        })
-        .then(newState => {
-            console.log('New game state received:', newState);
-            gameState = newState;
-            updateGameBoard();
-        })
-        .catch(error => {
-            console.error('Error fetching game state:', error);
-            showError('Failed to update game state. Please refresh the page.');
-        });
+    return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error('Timeout: Failed to fetch game state'));
+        }, 10000); // 10 seconds timeout
+
+        fetch('/api/game_state')
+            .then(response => {
+                clearTimeout(timeout);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch game state');
+                }
+                return response.json();
+            })
+            .then(newState => {
+                console.log('New game state received:', newState);
+                gameState = newState;
+                updateGameBoard();
+                resolve(newState);
+            })
+            .catch(error => {
+                clearTimeout(timeout);
+                console.error('Error fetching game state:', error);
+                showError('Failed to update game state. Please refresh the page.');
+                reject(error);
+            });
+    });
+}
+
+function hideLoadingIndicator() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+function showGameBoard() {
+    const gameBoard = document.querySelector('.game-board');
+    if (gameBoard) {
+        gameBoard.style.display = 'flex';
+    }
 }
 
 // Event listeners
@@ -215,7 +241,16 @@ window.onload = function() {
     }
 
     // Fetch initial game state
-    fetchGameState();
+    fetchGameState()
+        .then(() => {
+            console.log('Game initialized successfully');
+            hideLoadingIndicator();
+            showGameBoard();
+        })
+        .catch(error => {
+            console.error('Failed to initialize game:', error);
+            showError('Failed to initialize game. Please refresh the page.');
+        });
 };
 
 // Socket event handlers

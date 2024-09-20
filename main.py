@@ -33,7 +33,9 @@ def draw_card():
         card = game.draw_card('player')
         if card:
             socketio.emit('update_game_state', game.get_game_state())
+            logger.info(f"Player drew card: {card.to_dict()}")
             return jsonify(card.to_dict()), 200
+        logger.warning("No cards left in the deck")
         return jsonify({'error': 'No cards left in the deck'}), 400
     except Exception as e:
         logger.error(f"Error drawing card: {str(e)}")
@@ -44,12 +46,15 @@ def play_card():
     try:
         card_id = request.json.get('card_id')
         if card_id is None:
+            logger.warning("Missing card_id in request")
             return jsonify({'error': 'Missing card_id in request'}), 400
         
         success = game.play_card(card_id, 'player')
         if success:
             socketio.emit('update_game_state', game.get_game_state())
+            logger.info(f"Player played card: {card_id}")
             return jsonify({'success': True}), 200
+        logger.warning(f"Failed to play card: {card_id}")
         return jsonify({'error': 'Failed to play card'}), 400
     except Exception as e:
         logger.error(f"Error playing card: {str(e)}")
@@ -60,6 +65,7 @@ def end_turn():
     try:
         game.end_turn()
         socketio.emit('update_game_state', game.get_game_state())
+        logger.info("Player ended turn")
         return jsonify({'success': True}), 200
     except Exception as e:
         logger.error(f"Error ending turn: {str(e)}")
@@ -85,4 +91,5 @@ def handle_disconnect():
     logger.info('Client disconnected')
 
 if __name__ == '__main__':
+    logger.info("Starting the Flask application")
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
