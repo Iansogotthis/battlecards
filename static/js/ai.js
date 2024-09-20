@@ -69,10 +69,26 @@ class AI {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    console.log('AI turn ended successfully');
                     this.game.currentTurn = 'player';
+                    // Trigger an update of the game state after AI's turn
+                    this.updateGameState();
                 }
             })
             .catch(error => console.error('Error in AI ending turn:', error));
+    }
+
+    updateGameState() {
+        fetch('/api/game_state')
+            .then(response => response.json())
+            .then(newState => {
+                console.log('New game state after AI turn:', newState);
+                Object.assign(this.game, newState);
+                // Emit a custom event to notify that the game state has been updated
+                const event = new CustomEvent('aiTurnEnded', { detail: newState });
+                document.dispatchEvent(event);
+            })
+            .catch(error => console.error('Error updating game state after AI turn:', error));
     }
 }
 

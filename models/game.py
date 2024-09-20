@@ -12,7 +12,8 @@ class Game:
         self.opponent_field = []
         self.player_deck = self.create_deck()
         self.opponent_deck = self.create_deck()
-        self.current_turn = 'player'
+        self.current_turn = 'player'  # Ensure the game starts with the player's turn
+        logger.info("Game initialized. Starting with player's turn.")
 
     def create_deck(self):
         # Create a sample deck of 30 cards
@@ -75,9 +76,10 @@ class Game:
         """End the current turn and switch to the other player"""
         logger.info(f"Ending turn for {self.current_turn}")
         self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
+        logger.info(f"New turn: {self.current_turn}")
         # Draw a card for the player whose turn is starting
         self.draw_card(self.current_turn)
-        logger.info(f"New turn: {self.current_turn}")
+        logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
     def get_game_state(self):
         state = {

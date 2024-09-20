@@ -71,6 +71,7 @@ function updateDeckCounts() {
 function updateTurnIndicator() {
     const turnIndicator = document.getElementById('turn-indicator');
     turnIndicator.textContent = gameState.currentTurn === 'player' ? 'Your Turn' : 'Opponent\'s Turn';
+    console.log('Turn indicator updated:', turnIndicator.textContent);
 }
 
 function showError(message) {
@@ -170,6 +171,7 @@ function endTurn() {
             if (data.success) {
                 gameState.currentTurn = 'opponent';
                 updateGameBoard();
+                console.log('Turn changed to opponent, triggering AI turn');
                 setTimeout(() => {
                     ai.playTurn();
                     fetchGameState();
@@ -202,6 +204,7 @@ function fetchGameState() {
         .then(newState => {
             console.log('New game state received:', newState);
             gameState = newState;
+            console.log('Current turn after fetching game state:', gameState.currentTurn);
             updateGameBoard();
             hideLoadingIndicator();
         })
@@ -247,6 +250,7 @@ window.onload = function() {
 socket.on('update_game_state', (newState) => {
     console.log('Received updated game state:', newState);
     gameState = newState;
+    console.log('Current turn after socket update:', gameState.currentTurn);
     updateGameBoard();
 });
 

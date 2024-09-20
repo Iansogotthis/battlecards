@@ -68,12 +68,13 @@ def play_card():
 @app.route('/api/end_turn')
 def end_turn():
     try:
+        logger.info(f"Ending turn. Current turn before change: {game.current_turn}")
         game.end_turn()
         new_state = game.get_game_state()
+        logger.info(f"Turn ended. New turn: {new_state['current_turn']}")
         socketio.emit('update_game_state', new_state)
-        logger.info("Player ended turn")
         logger.debug(f"New game state after ending turn: {new_state}")
-        return jsonify({'success': True}), 200
+        return jsonify({'success': True, 'new_state': new_state}), 200
     except Exception as e:
         logger.error(f"Error ending turn: {str(e)}")
         return jsonify({'error': str(e)}), 500
