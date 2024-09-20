@@ -3,10 +3,15 @@ from flask_socketio import SocketIO
 from models.card import Card
 from models.game import Game
 from utils.db import init_db, get_db_connection
+import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with a real secret key in production
 socketio = SocketIO(app)
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Initialize the database
 init_db()
@@ -31,6 +36,7 @@ def draw_card():
             return jsonify(card.to_dict()), 200
         return jsonify({'error': 'No cards left in the deck'}), 400
     except Exception as e:
+        logger.error(f"Error drawing card: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/play_card', methods=['POST'])
@@ -46,6 +52,7 @@ def play_card():
             return jsonify({'success': True}), 200
         return jsonify({'error': 'Failed to play card'}), 400
     except Exception as e:
+        logger.error(f"Error playing card: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/end_turn')
@@ -55,23 +62,27 @@ def end_turn():
         socketio.emit('update_game_state', game.get_game_state())
         return jsonify({'success': True}), 200
     except Exception as e:
+        logger.error(f"Error ending turn: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/game_state')
 def get_game_state():
     try:
-        return jsonify(game.get_game_state()), 200
+        state = game.get_game_state()
+        logger.debug(f"Current game state: {state}")
+        return jsonify(state), 200
     except Exception as e:
+        logger.error(f"Error getting game state: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @socketio.on('connect')
 def handle_connect():
-    print('Client connected')
+    logger.info('Client connected')
     socketio.emit('update_game_state', game.get_game_state())
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('Client disconnected')
+    logger.info('Client disconnected')
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)

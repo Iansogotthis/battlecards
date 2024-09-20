@@ -1,0 +1,52 @@
+game.js:176 Window loaded, initializing game...
+game.js:183 Event listeners attached to buttons
+game.js:198 Initial game state: Object
+game.js:15 Updating game board with state: Object
+game.js:202 Error fetching initial game state: TypeError: Cannot read properties of undefined (reading 'forEach')
+    at updateHand (game.js:26:26)
+    at updateGameBoard (game.js:16:5)
+    at game.js:199:13
+(anonymous) @ game.js:202
+game.js:209 Received updated game state: Object
+game.js:15 Updating game board with state: Object
+game.js:26 Uncaught TypeError: Cannot read properties of undefined (reading 'forEach')
+    at updateHand (game.js:26:26)
+    at updateGameBoard (game.js:16:5)
+    at Socket.<anonymous> (game.js:211:5)
+    at ./node_modules/component-emitter/index.js.Emitter.emit (index.js:145:20)
+    at Socket.emit (typed-events.js:46:9)
+    at Socket.emitEvent (socket.js:263:20)
+    at socket.js:322:51
+    at Array.forEach (<anonymous>)
+    at Socket.emitBuffered (socket.js:322:28)
+    at Socket.onconnect (socket.js:314:14)
+updateHand @ game.js:26
+updateGameBoard @ game.js:16
+(anonymous) @ game.js:211
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+emit @ typed-events.js:46
+emitEvent @ socket.js:263
+(anonymous) @ socket.js:322
+emitBuffered @ socket.js:322
+onconnect @ socket.js:314
+onpacket @ socket.js:207
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+emitReserved @ typed-events.js:59
+ondecoded @ manager.js:207
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+add @ index.js:117
+ondata @ manager.js:199
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+onPacket @ socket.js:407
+(anonymous) @ socket.js:216
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+onPacket @ transport.js:105
+callback @ polling.js:101
+onData @ polling.js:105
+(anonymous) @ polling-xhr.js:94
+./node_modules/component-emitter/index.js.Emitter.emit @ index.js:145
+onData @ polling-xhr.js:236
+onLoad @ polling-xhr.js:287
+xhr.onreadystatechange @ polling-xhr.js:191
+Show 16 more frames
+Show less
