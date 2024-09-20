@@ -1,89 +1,105 @@
 class AI {
-    constructor(game) {
-        this.game = game;
+    constructor(gameState) {
+        this.gameState = gameState;
     }
 
     playTurn() {
         console.log('AI is playing its turn');
-        // Draw a card
-        this.drawCard();
-
-        // Play the best card possible
-        this.playBestCard();
-
-        // End the turn
-        this.endTurn();
+        this.drawCard()
+            .then(() => this.playBestCard())
+            .then(() => this.endTurn())
+            .catch(error => console.error('Error during AI turn:', error));
     }
 
     drawCard() {
         console.log('AI is attempting to draw a card');
-        fetch('/api/draw_card')
-            .then(response => response.json())
+        return fetch('/api/draw_card')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to draw card');
+                }
+                return response.json();
+            })
             .then(card => {
                 console.log('AI drew card:', card);
-                if (!this.game.opponentHand) {
-                    this.game.opponentHand = [];
+                if (!this.gameState.opponentHand) {
+                    this.gameState.opponentHand = [];
                 }
-                this.game.opponentHand.push(card);
-                this.game.opponentDeckCount--;
+                this.gameState.opponentHand.push(card);
+                this.gameState.opponentDeckCount--;
             })
             .catch(error => console.error('Error in AI drawing card:', error));
     }
 
     playBestCard() {
         console.log('AI is choosing the best card to play');
-        if (this.game.opponentHand && this.game.opponentHand.length > 0) {
-            // Simple strategy: Play the card with the highest attack value
-            const bestCard = this.game.opponentHand.reduce((best, current) => 
+        if (this.gameState.opponentHand && this.gameState.opponentHand.length > 0) {
+            const bestCard = this.gameState.opponentHand.reduce((best, current) => 
                 current.attack > best.attack ? current : best
             );
 
             console.log('AI is playing card:', bestCard);
-            fetch('/api/play_card', {
+            return fetch('/api/play_card', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ card_id: bestCard.id }),
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to play card');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        const cardIndex = this.game.opponentHand.findIndex(card => card.id === bestCard.id);
-                        this.game.opponentHand.splice(cardIndex, 1);
-                        if (!this.game.opponentField) {
-                            this.game.opponentField = [];
+                        const cardIndex = this.gameState.opponentHand.findIndex(card => card.id === bestCard.id);
+                        this.gameState.opponentHand.splice(cardIndex, 1);
+                        if (!this.gameState.opponentField) {
+                            this.gameState.opponentField = [];
                         }
-                        this.game.opponentField.push(bestCard);
+                        this.gameState.opponentField.push(bestCard);
                     }
                 })
                 .catch(error => console.error('Error in AI playing card:', error));
         } else {
             console.log('AI has no cards to play');
+            return Promise.resolve();
         }
     }
 
     endTurn() {
         console.log('AI is ending its turn');
-        fetch('/api/end_turn')
-            .then(response => response.json())
+        return fetch('/api/end_turn')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to end turn');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     console.log('AI turn ended successfully');
-                    this.game.currentTurn = 'player';
+                    this.gameState.currentTurn = 'player';
                     // Trigger an update of the game state after AI's turn
-                    this.updateGameState();
+                    return this.updateGameState();
                 }
             })
             .catch(error => console.error('Error in AI ending turn:', error));
     }
 
     updateGameState() {
-        fetch('/api/game_state')
-            .then(response => response.json())
+        return fetch('/api/game_state')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch game state');
+                }
+                return response.json();
+            })
             .then(newState => {
                 console.log('New game state after AI turn:', newState);
-                Object.assign(this.game, newState);
+                Object.assign(this.gameState, newState);
                 // Emit a custom event to notify that the game state has been updated
                 const event = new CustomEvent('aiTurnEnded', { detail: newState });
                 document.dispatchEvent(event);

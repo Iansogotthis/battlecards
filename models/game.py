@@ -40,14 +40,14 @@ class Game:
                 self.player_hand.append(card)
                 logger.info(f"Player drew card: {card.to_dict()}")
                 logger.debug(f"Player hand after drawing: {[c.to_dict() for c in self.player_hand]}")
-                return card
+                return card.to_dict()  # Return a dictionary instead of the card object
         elif player == 'opponent':
             if self.opponent_deck:
                 card = self.opponent_deck.pop()
                 self.opponent_hand.append(card)
                 logger.info(f"Opponent drew card: {card.to_dict()}")
                 logger.debug(f"Opponent hand after drawing: {[c.to_dict() for c in self.opponent_hand]}")
-                return card
+                return card.to_dict()  # Return a dictionary instead of the card object
         logger.warning(f"No cards left in the {player}'s deck")
         return None
 
@@ -56,7 +56,7 @@ class Game:
         if player == 'player':
             card = next((card for card in self.player_hand if card.id == card_id), None)
             if card:
-                self.player_hand.remove(card)
+                self.player_hand = [c for c in self.player_hand if c.id != card_id]  # Remove the card by id
                 self.player_field.append(card)
                 logger.info(f"Player played card: {card.to_dict()}")
                 logger.debug(f"Player field after playing: {[c.to_dict() for c in self.player_field]}")
@@ -64,7 +64,7 @@ class Game:
         elif player == 'opponent':
             card = next((card for card in self.opponent_hand if card.id == card_id), None)
             if card:
-                self.opponent_hand.remove(card)
+                self.opponent_hand = [c for c in self.opponent_hand if c.id != card_id]  # Remove the card by id
                 self.opponent_field.append(card)
                 logger.info(f"Opponent played card: {card.to_dict()}")
                 logger.debug(f"Opponent field after playing: {[c.to_dict() for c in self.opponent_field]}")
@@ -76,7 +76,7 @@ class Game:
         logger.info(f"Ending turn for {self.current_turn}")
         self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
         logger.info(f"New turn: {self.current_turn}")
-        self.draw_card(self.current_turn)
+        # Remove the card draw from here, it will be handled in the main.py route
         logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
     def get_game_state(self):

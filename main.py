@@ -32,9 +32,9 @@ def draw_card():
         if card:
             new_state = game.get_game_state()
             socketio.emit('update_game_state', new_state)
-            logger.info(f"Player drew card: {card.to_dict()}")
+            logger.info(f"Player drew card: {card}")
             logger.debug(f"New game state after drawing: {new_state}")
-            return jsonify(card.to_dict()), 200
+            return jsonify(card), 200
         logger.warning("No cards left in the deck")
         return jsonify({'error': 'No cards left in the deck'}), 400
     except Exception as e:
