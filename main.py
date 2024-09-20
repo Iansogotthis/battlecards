@@ -4,6 +4,7 @@ from models.card import Card
 from models.game import Game
 from utils.db import init_db, get_db_connection
 import logging
+import traceback
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'  # Replace with a real secret key in production
@@ -59,11 +60,18 @@ def draw_card():
 @app.route('/api/play_card', methods=['POST'])
 def play_card():
     try:
+        logger.info("Received play_card request")
         card_id = request.json.get('card_id')
-        player = request.json.get('player', 'player')  # Default to 'player' if not specified
+        player = request.json.get('player', 'player')
+        logger.info(f"Attempting to play card: {card_id} for player: {player}")
+        
         if card_id is None:
             logger.warning("Missing card_id in request")
             return jsonify({'error': 'Missing card_id in request'}), 400
+        
+        if game.current_turn != player:
+            logger.warning(f"Attempted to play card out of turn. Current turn: {game.current_turn}")
+            return jsonify({'error': "It's not your turn!"}), 400
         
         success = game.play_card(card_id, player)
         if success:
@@ -76,6 +84,7 @@ def play_card():
         return jsonify({'error': 'Failed to play card'}), 400
     except Exception as e:
         logger.error(f"Error playing card: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/end_turn')

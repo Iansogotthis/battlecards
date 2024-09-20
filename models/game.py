@@ -60,23 +60,27 @@ class Game:
     def play_card(self, card_id, player):
         logger.info(f"{player} is playing card with id: {card_id}")
         if player == 'player':
-            card = next((card for card in self.player_hand if card.id == card_id), None)
-            if card:
-                self.player_hand = [c for c in self.player_hand if c.id != card_id]
-                self.player_field.append(card)
-                logger.info(f"Player played card: {card.to_dict()}")
-                logger.debug(f"Player field after playing: {[c.to_dict() for c in self.player_field]}")
-                return True
+            hand = self.player_hand
+            field = self.player_field
         elif player == 'opponent':
-            card = next((card for card in self.opponent_hand if card.id == card_id), None)
-            if card:
-                self.opponent_hand = [c for c in self.opponent_hand if c.id != card_id]
-                self.opponent_field.append(card)
-                logger.info(f"Opponent played card: {card.to_dict()}")
-                logger.debug(f"Opponent field after playing: {[c.to_dict() for c in self.opponent_field]}")
-                return True
-        logger.warning(f"Failed to play card with id {card_id} for {player}")
-        return False
+            hand = self.opponent_hand
+            field = self.opponent_field
+        else:
+            logger.error(f"Invalid player: {player}")
+            return False
+
+        card = next((card for card in hand if card.id == card_id), None)
+        if card:
+            logger.info(f"Found card in {player}'s hand: {card.to_dict()}")
+            hand.remove(card)
+            field.append(card)
+            logger.info(f"{player.capitalize()} played card: {card.to_dict()}")
+            logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
+            return True
+        else:
+            logger.warning(f"Card with id {card_id} not found in {player}'s hand")
+            logger.debug(f"{player.capitalize()} hand: {[c.to_dict() for c in hand]}")
+            return False
 
     def end_turn(self):
         logger.info(f"Ending turn for {self.current_turn}")

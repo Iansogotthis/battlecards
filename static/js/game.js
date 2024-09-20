@@ -26,7 +26,6 @@ function updateHand() {
     const handElement = document.getElementById('player-hand');
     handElement.innerHTML = '';
     if (Array.isArray(gameState.playerHand)) {
-        // Remove duplicate cards
         gameState.playerHand = gameState.playerHand.filter((card, index, self) =>
             index === self.findIndex((t) => t.id === card.id)
         );
@@ -72,16 +71,13 @@ function selectCard(event, cardId) {
     event.stopPropagation();
     const clickedCard = event.currentTarget;
     
-    // Remove selection from previously selected card
     if (selectedCard) {
         selectedCard.classList.remove('selected-card');
     }
     
-    // If the clicked card is already selected, deselect it
     if (selectedCard === clickedCard) {
         selectedCard = null;
     } else {
-        // Select the new card
         clickedCard.classList.add('selected-card');
         selectedCard = clickedCard;
     }
@@ -138,7 +134,6 @@ function drawCard() {
             if (!Array.isArray(gameState.playerHand)) {
                 gameState.playerHand = [];
             }
-            // Check for duplicates before adding the card
             if (!gameState.playerHand.some(c => c.id === card.id)) {
                 gameState.playerHand.push(card);
                 gameState.playerDeckCount--;
@@ -165,32 +160,43 @@ function playCard() {
         return;
     }
     
-    const cardId = selectedCard.getAttribute('data-card-id');
+    const cardId = parseInt(selectedCard.getAttribute('data-card-id'));
+    console.log('Selected card ID:', cardId);
     
     fetch('/api/play_card', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ card_id: cardId }),
+        body: JSON.stringify({ card_id: cardId, player: 'player' }),
     })
         .then(response => {
+            console.log('Play card response status:', response.status);
             if (!response.ok) {
                 throw new Error('Failed to play card');
             }
             return response.json();
         })
         .then(data => {
-            console.log('Card played successfully:', data);
+            console.log('Play card response data:', data);
             if (data.success) {
-                const cardIndex = gameState.playerHand.findIndex(card => card.id === parseInt(cardId));
-                const playedCard = gameState.playerHand.splice(cardIndex, 1)[0];
-                if (!Array.isArray(gameState.playerField)) {
-                    gameState.playerField = [];
+                console.log('Card played successfully. Updating game state.');
+                const cardIndex = gameState.playerHand.findIndex(card => card.id === cardId);
+                if (cardIndex !== -1) {
+                    const playedCard = gameState.playerHand.splice(cardIndex, 1)[0];
+                    if (!Array.isArray(gameState.playerField)) {
+                        gameState.playerField = [];
+                    }
+                    gameState.playerField.push(playedCard);
+                    selectedCard.classList.remove('selected-card');
+                    selectedCard = null;
+                    updateGameBoard();
+                } else {
+                    console.error('Card not found in player hand:', cardId);
                 }
-                gameState.playerField.push(playedCard);
-                selectedCard = null;
-                updateGameBoard();
+            } else {
+                console.error('Failed to play card:', data.error);
+                showError(data.error || 'Failed to play card. Please try again.');
             }
         })
         .catch(error => {
