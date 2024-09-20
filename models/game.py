@@ -103,51 +103,64 @@ class Game:
             return False
 
     def apply_card_effect(self, card, player):
+        logger.info(f"Applying card effect: {card.effect} for {player}")
         if player == 'player':
             target_health = self.opponent_health
+            player_health = self.player_health
         else:
             target_health = self.player_health
+            player_health = self.opponent_health
 
         if card.effect == 'heal':
-            if player == 'player':
-                self.player_health = min(30, self.player_health + 2)
-            else:
-                self.opponent_health = min(30, self.opponent_health + 2)
+            player_health = min(30, player_health + 2)
+            logger.info(f"{player.capitalize()} healed. New health: {player_health}")
         elif card.effect == 'damage_boost':
-            target_health -= card.attack + 2
+            damage = card.attack + 2
+            target_health = max(0, target_health - damage)
+            logger.info(f"{player.capitalize()} dealt boosted damage: {damage}. Target health: {target_health}")
         elif card.effect == 'defense_boost':
-            # Increase defense of all cards on the field
             for field_card in (self.player_field if player == 'player' else self.opponent_field):
                 field_card.defense += 1
+            logger.info(f"{player.capitalize()} boosted defense of all field cards")
         elif card.effect == 'pierce':
-            target_health -= max(1, card.attack - 2)
+            damage = max(1, card.attack - 2)
+            target_health = max(0, target_health - damage)
+            logger.info(f"{player.capitalize()} dealt pierce damage: {damage}. Target health: {target_health}")
 
         if player == 'player':
-            self.opponent_health = max(0, target_health)
+            self.opponent_health = target_health
+            self.player_health = player_health
         else:
-            self.player_health = max(0, target_health)
-
-    def discard_card(self, card):
-        self.discard_pile.append(card)
-        logger.info(f"Card discarded: {card.to_dict()}")
-        logger.debug(f"Discard pile size: {len(self.discard_pile)}")
+            self.player_health = target_health
+            self.opponent_health = player_health
 
     def clear_fields(self):
         if self.current_turn == 'player' and self.round_number % 2 == 0:
+            logger.info(f"Clearing fields at the end of round {self.round_number}")
             for card in self.player_field + self.opponent_field:
                 self.discard_card(card)
             self.player_field.clear()
             self.opponent_field.clear()
-            self.round_number += 1
-            logger.info(f"Fields cleared. New round: {self.round_number}")
+            logger.info("Fields cleared")
 
     def end_turn(self):
         logger.info(f"Ending turn for {self.current_turn}")
         self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
         if self.current_turn == 'player':
             self.round_number += 1
+            logger.info(f"New round: {self.round_number}")
+            self.clear_fields()
+        
+        if self.game_over:
+            logger.info("Game over detected during end turn")
+        
         logger.info(f"New turn: {self.current_turn}")
         logger.debug(f"Game state after turn change: {self.get_game_state()}")
+
+    def discard_card(self, card):
+        self.discard_pile.append(card)
+        logger.info(f"Card discarded: {card.to_dict()}")
+        logger.debug(f"Discard pile size: {len(self.discard_pile)}")
 
     def get_game_state(self):
         return {
