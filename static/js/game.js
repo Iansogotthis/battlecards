@@ -12,6 +12,7 @@ let gameState = {
 const ai = new AI(gameState);
 
 function updateGameBoard() {
+    console.log('Updating game board with state:', gameState);
     updateHand();
     updateField('player-field', gameState.playerField);
     updateField('opponent-field', gameState.opponentField);
@@ -171,14 +172,41 @@ function endTurn() {
 }
 
 // Event listeners
-document.getElementById('draw-button').addEventListener('click', drawCard);
-document.getElementById('end-turn-button').addEventListener('click', endTurn);
+window.onload = function() {
+    console.log('Window loaded, initializing game...');
+    const drawButton = document.getElementById('draw-button');
+    const endTurnButton = document.getElementById('end-turn-button');
+    
+    if (drawButton && endTurnButton) {
+        drawButton.addEventListener('click', drawCard);
+        endTurnButton.addEventListener('click', endTurn);
+        console.log('Event listeners attached to buttons');
+    } else {
+        console.error('Failed to find draw or end turn buttons');
+    }
 
-// Initialize game board
-updateGameBoard();
+    // Fetch initial game state
+    fetch('/api/game_state')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch initial game state');
+            }
+            return response.json();
+        })
+        .then(initialState => {
+            gameState = initialState;
+            console.log('Initial game state:', gameState);
+            updateGameBoard();
+        })
+        .catch(error => {
+            console.error('Error fetching initial game state:', error);
+            showError('Failed to initialize game. Please refresh the page.');
+        });
+};
 
 // Socket event handlers
 socket.on('update_game_state', (newState) => {
+    console.log('Received updated game state:', newState);
     gameState = newState;
     updateGameBoard();
 });
