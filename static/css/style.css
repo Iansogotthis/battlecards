@@ -1,3 +1,8 @@
+html, body {
+    height: 100%;
+    overflow-x: hidden;
+}
+
 body {
     background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
     color: #fff;
@@ -15,6 +20,7 @@ body {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    box-sizing: border-box;
 }
 
 .opponent-area, .player-area {
@@ -31,9 +37,14 @@ body {
     min-height: 150px;
 }
 
-.card {
+.card, .deck {
     width: 100px;
     height: 140px;
+    max-width: 100%;
+    font-size: 1em;
+}
+
+.card {
     background-color: #f0f0f0;
     border: 2px solid #333;
     border-radius: 10px;
@@ -73,15 +84,12 @@ body {
 }
 
 .deck {
-    width: 100px;
-    height: 140px;
     background-image: url('/static/images/card_back.svg');
     background-size: cover;
     border-radius: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
     font-weight: bold;
     color: white;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
@@ -182,32 +190,6 @@ body {
     border-radius: 10px;
 }
 
-@media (max-width: 768px) {
-    .game-board {
-        padding: 10px;
-    }
-
-    .card {
-        width: 80px;
-        height: 112px;
-    }
-
-    .deck {
-        width: 80px;
-        height: 112px;
-    }
-
-    .controls {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    button {
-        width: 100%;
-        max-width: 200px;
-    }
-}
-
 .landing-page {
     max-width: 800px;
     margin: 0 auto;
@@ -253,4 +235,51 @@ body {
 
 #play-again-button {
     margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+    .game-board {
+        padding: 5px;
+    }
+
+    .card, .deck {
+        width: 60px;
+        height: 84px;
+        font-size: 0.8em;
+    }
+
+    .controls button {
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-board {
+        padding: 10px;
+    }
+
+    .card, .deck {
+        width: 70px;
+        height: 98px;
+        font-size: 0.9em;
+    }
+
+    .controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .controls button {
+        margin: 5px;
+        width: calc(50% - 10px);
+        max-width: none;
+    }
+}
+
+@media (min-width: 1200px) {
+    .game-board {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 }
