@@ -4,19 +4,24 @@ html, body {
 }
 
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
     background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
     color: #fff;
     font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
 }
 
 .game-board {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    min-height: 100vh;
+    justify-content: space-between;
+    padding: 10px;
+    max-width: 100%;
+    margin: 0 auto;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
@@ -33,15 +38,16 @@ body {
 .hand, .play-area {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 5px;
+    justify-content: center;
     min-height: 150px;
 }
 
 .card, .deck {
-    width: 100px;
-    height: 140px;
+    width: 80px;
+    height: 112px;
+    font-size: 0.8em;
     max-width: 100%;
-    font-size: 1em;
 }
 
 .card {
@@ -96,14 +102,17 @@ body {
 }
 
 .controls {
-    margin-top: 20px;
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 5px;
+    margin-top: 10px;
     width: 100%;
 }
 
 .controls button {
+    flex: 1 1 calc(50% - 5px);
+    max-width: 150px;
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -245,16 +254,16 @@ body {
     .card, .deck {
         width: 60px;
         height: 84px;
-        font-size: 0.8em;
+        font-size: 0.7em;
     }
 
     .controls button {
-        padding: 5px 10px;
-        font-size: 0.9em;
+        padding: 5px;
+        font-size: 0.8em;
     }
 }
 
-@media (max-width: 768px) {
+@media (min-width: 481px) and (max-width: 768px) {
     .game-board {
         padding: 10px;
     }
@@ -262,24 +271,25 @@ body {
     .card, .deck {
         width: 70px;
         height: 98px;
-        font-size: 0.9em;
-    }
-
-    .controls {
-        flex-wrap: wrap;
-        justify-content: center;
+        font-size: 0.75em;
     }
 
     .controls button {
-        margin: 5px;
-        width: calc(50% - 10px);
-        max-width: none;
+        padding: 8px;
+        font-size: 0.9em;
     }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 769px) and (max-width: 1024px) {
+    .card, .deck {
+        width: 75px;
+        height: 105px;
+        font-size: 0.85em;
+    }
+}
+
+@media (min-width: 1025px) {
     .game-board {
-        max-width: 1200px;
-        margin: 0 auto;
+        max-width: 1000px;
     }
 }
