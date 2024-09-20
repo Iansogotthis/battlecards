@@ -1,15 +1,10 @@
-html, body {
-    height: 100%;
-    overflow-x: hidden;
-}
-
 body {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
     margin: 0;
     padding: 0;
-    overflow-y: auto;
     background: linear-gradient(135deg, #1e5799 0%,#2989d8 50%,#207cca 51%,#7db9e8 100%);
     color: #fff;
     font-family: 'Arial', sans-serif;
@@ -20,15 +15,20 @@ body {
     flex-direction: column;
     justify-content: space-between;
     padding: 10px;
-    max-width: 100%;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 1000px;
     height: auto;
-    max-height: 100vh;
+    max-height: 90vh;
     overflow-y: auto;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
     box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow-x: hidden;
 }
 
 .opponent-area, .player-area {
