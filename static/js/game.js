@@ -32,7 +32,7 @@ function clearFieldsWithDelay() {
                 console.error('Error clearing fields:', error);
                 showError('Failed to clear fields. Please try again.');
             });
-    }, 2000); // 2 second delay
+    }, 2000);
 }
 
 function updateGameBoard() {
@@ -147,8 +147,10 @@ function updateRoundIndicator() {
 function checkGameOver() {
     if (gameState.gameOver) {
         const gameOverMessage = document.getElementById('game-over-message');
-        gameOverMessage.style.display = 'block';
+        const gameOverOverlay = document.getElementById('game-over-overlay');
         gameOverMessage.textContent = gameState.playerHealth <= 0 ? 'Game Over: You Lose!' : 'Game Over: You Win!';
+        gameOverMessage.style.display = 'block';
+        gameOverOverlay.style.display = 'flex';
         disableGameControls();
     }
 }
@@ -318,6 +320,7 @@ function resetGame() {
                 selectedCard = null;
                 updateGameBoard();
                 document.getElementById('game-over-message').style.display = 'none';
+                document.getElementById('game-over-overlay').style.display = 'none';
                 document.getElementById('draw-button').disabled = false;
                 document.getElementById('play-button').disabled = false;
                 document.getElementById('end-turn-button').disabled = false;

@@ -9,7 +9,6 @@
 <body>
     <div id="loading-indicator" class="loading">Loading game...</div>
     <div id="error-message" class="error-message" style="display: none;"></div>
-    <div id="game-over-message" class="game-over-message" style="display: none;"></div>
     <div class="game-board" style="display: none;">
         <div id="turn-indicator" class="turn-indicator"></div>
         <div id="round-indicator" class="round-indicator"></div>
@@ -45,6 +44,9 @@
             <button id="end-turn-button" class="game-button">End Turn</button>
             <button id="reset-button" class="game-button">Reset Game</button>
         </div>
+    </div>
+    <div id="game-over-overlay" class="game-over-overlay" style="display: none;">
+        <div id="game-over-message" class="game-over-message"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
