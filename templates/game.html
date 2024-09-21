@@ -3,19 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Battle TCG - Multiplayer Game</title>
+    <title>Battle TCG - Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div id="game-setup">
-        <h2>Multiplayer Game Setup</h2>
-        <button id="create-game-button">Create Game</button>
-        <div id="game-id-display"></div>
-        <input type="text" id="game-id-input" placeholder="Enter Game ID">
-        <button id="join-game-button">Join Game</button>
-    </div>
-
     <div id="loading-indicator" class="loading">Loading game...</div>
     <div id="error-message" class="error-message" style="display: none;"></div>
     <div class="game-board" style="display: none;">
@@ -53,7 +45,7 @@
             </div>
             <div class="discard-pile">
                 <i class="fas fa-trash-alt"></i>
-                <div class="discard-pile-label">Opponent Discard Pile:</div>
+                <div class="discard-pile-label">AI Discard Pile:</div>
                 <span id="opponent-discard-pile-count">0</span>
             </div>
         </div>
@@ -61,6 +53,7 @@
             <button id="draw-button" class="game-button">Draw Card</button>
             <button id="play-button" class="game-button">Play Selected Card</button>
             <button id="end-turn-button" class="game-button">End Turn</button>
+            <button id="reset-button" class="game-button">Reset Game</button>
         </div>
     </div>
     <div id="game-over-overlay" class="game-over-overlay" style="display: none;">
@@ -68,6 +61,7 @@
         <button id="play-again-button" class="game-button">Play Again</button>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/ai.js') }}"></script>
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
 </body>
 </html>

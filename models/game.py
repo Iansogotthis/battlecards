@@ -9,30 +9,20 @@ class Game:
         self.reset_game()
 
     def reset_game(self):
-        self.players = []
-        self.player_hands = {}
-        self.player_fields = {}
-        self.player_decks = {}
-        self.player_discard_piles = {}
-        self.player_health = {}
-        self.current_turn = None
+        self.player_hand = []
+        self.player_field = []
+        self.opponent_hand = []
+        self.opponent_field = []
+        self.player_deck = self.create_deck()
+        self.opponent_deck = self.create_deck()
+        self.current_turn = 'player'
+        self.player_discard_pile = []
+        self.opponent_discard_pile = []
+        self.player_health = 30
+        self.opponent_health = 30
         self.round_number = 1
         self.game_over = False
-        logger.info("Game reset.")
-
-    def add_player(self, player_id):
-        if len(self.players) < 2:
-            self.players.append(player_id)
-            self.player_hands[player_id] = []
-            self.player_fields[player_id] = []
-            self.player_decks[player_id] = self.create_deck()
-            self.player_discard_piles[player_id] = []
-            self.player_health[player_id] = 30
-            if len(self.players) == 1:
-                self.current_turn = player_id
-            logger.info(f"Player {player_id} added to the game.")
-            return True
-        return False
+        logger.info("Game reset. Starting with player's turn.")
 
     def create_deck(self):
         deck = []
@@ -50,75 +40,137 @@ class Game:
         random.shuffle(deck)
         return deck
 
-    def draw_card(self, player_id):
-        if player_id in self.players and self.player_decks[player_id]:
-            card = self.player_decks[player_id].pop()
-            self.player_hands[player_id].append(card)
-            logger.info(f"Player {player_id} drew card: {card.to_dict()}")
-            return card
-        logger.warning(f"No cards left in the {player_id}'s deck")
+    def draw_card(self, player):
+        logger.info(f"{player} is drawing a card")
+        if player == 'player':
+            if self.player_deck:
+                card = self.player_deck.pop()
+                self.player_hand.append(card)
+                self.remove_duplicates(self.player_hand)
+                logger.info(f"Player drew card: {card.to_dict()}")
+                logger.debug(f"Player hand after drawing: {[c.to_dict() for c in self.player_hand]}")
+                return card.to_dict()
+        elif player == 'opponent':
+            if self.opponent_deck:
+                card = self.opponent_deck.pop()
+                self.opponent_hand.append(card)
+                self.remove_duplicates(self.opponent_hand)
+                logger.info(f"Opponent drew card: {card.to_dict()}")
+                logger.debug(f"Opponent hand after drawing: {[c.to_dict() for c in self.opponent_hand]}")
+                return card.to_dict()
+        logger.warning(f"No cards left in the {player}'s deck")
         return None
 
-    def play_card(self, player_id, card_id):
-        if player_id in self.players and player_id == self.current_turn:
-            hand = self.player_hands[player_id]
-            field = self.player_fields[player_id]
-            card = next((card for card in hand if card.id == card_id), None)
-            if card:
-                hand.remove(card)
-                field.append(card)
-                logger.info(f"Player {player_id} played card: {card.to_dict()}")
-                self.apply_card_effect(player_id, card)
-                self.discard_card(player_id, card)
-                return True
-            logger.warning(f"Card with id {card_id} not found in player {player_id}'s hand")
-        return False
+    def remove_duplicates(self, hand):
+        seen = set()
+        hand[:] = [card for card in hand if card.id not in seen and not seen.add(card.id)]
 
-    def apply_card_effect(self, player_id, card):
-        opponent_id = self.get_opponent(player_id)
+    def play_card(self, card_id, player):
+        logger.info(f"{player} is playing card with id: {card_id}")
+        if player == 'player':
+            hand = self.player_hand
+            field = self.player_field
+            opponent_field = self.opponent_field
+            opponent_health = self.opponent_health
+        elif player == 'opponent':
+            hand = self.opponent_hand
+            field = self.opponent_field
+            opponent_field = self.player_field
+            opponent_health = self.player_health
+        else:
+            logger.error(f"Invalid player: {player}")
+            return False
+
+        card = next((card for card in hand if card.id == card_id), None)
+        if card:
+            logger.info(f"Found card in {player}'s hand: {card.to_dict()}")
+            hand.remove(card)
+            field.append(card)
+            logger.info(f"{player.capitalize()} played card: {card.to_dict()}")
+            logger.debug(f"{player.capitalize()} field after playing: {[c.to_dict() for c in field]}")
+            
+            self.apply_card_effect(card, player)
+            self.discard_card(card, player)
+            
+            if self.player_health <= 0 or self.opponent_health <= 0:
+                self.game_over = True
+                logger.info("Game over condition reached")
+            
+            return True
+        else:
+            logger.warning(f"Card with id {card_id} not found in {player}'s hand")
+            logger.debug(f"{player.capitalize()} hand: {[c.to_dict() for c in hand]}")
+            return False
+
+    def apply_card_effect(self, card, player):
+        logger.info(f"Applying card effect: {card.effect} for {player}")
+        if player == 'player':
+            target_health = self.opponent_health
+            player_health = self.player_health
+        else:
+            target_health = self.player_health
+            player_health = self.opponent_health
+
         if card.effect == 'heal':
-            self.player_health[player_id] = min(30, self.player_health[player_id] + 2)
+            player_health = min(30, player_health + 2)
+            logger.info(f"{player.capitalize()} healed. New health: {player_health}")
         elif card.effect == 'damage_boost':
             damage = card.attack + 2
-            self.player_health[opponent_id] = max(0, self.player_health[opponent_id] - damage)
+            target_health = max(0, target_health - damage)
+            logger.info(f"{player.capitalize()} dealt boosted damage: {damage}. Target health: {target_health}")
         elif card.effect == 'defense_boost':
-            for field_card in self.player_fields[player_id]:
+            for field_card in (self.player_field if player == 'player' else self.opponent_field):
                 field_card.defense += 1
+            logger.info(f"{player.capitalize()} boosted defense of all field cards")
         elif card.effect == 'pierce':
             damage = max(1, card.attack - 2)
-            self.player_health[opponent_id] = max(0, self.player_health[opponent_id] - damage)
-        
-        if self.player_health[opponent_id] <= 0:
-            self.game_over = True
-        logger.info(f"Applied card effect: {card.effect} for player {player_id}")
+            target_health = max(0, target_health - damage)
+            logger.info(f"{player.capitalize()} dealt pierce damage: {damage}. Target health: {target_health}")
 
-    def discard_card(self, player_id, card):
-        self.player_discard_piles[player_id].append(card)
-        logger.info(f"Card discarded to player {player_id}'s pile: {card.to_dict()}")
+        if player == 'player':
+            self.opponent_health = target_health
+            self.player_health = player_health
+        else:
+            self.player_health = target_health
+            self.opponent_health = player_health
 
-    def end_turn(self, player_id):
-        if player_id == self.current_turn:
-            self.current_turn = self.get_opponent(player_id)
+    def end_turn(self):
+        logger.info(f"Ending turn for {self.current_turn}")
+        self.current_turn = 'opponent' if self.current_turn == 'player' else 'player'
+        if self.current_turn == 'player':
             self.round_number += 1
-            logger.info(f"Turn ended. New turn: {self.current_turn}, Round: {self.round_number}")
+            logger.info(f"New round: {self.round_number}")
+        
+        if self.game_over:
+            logger.info("Game over detected during end turn")
+        
+        logger.info(f"New turn: {self.current_turn}")
+        logger.debug(f"Game state after turn change: {self.get_game_state()}")
 
-    def get_opponent(self, player_id):
-        return next(player for player in self.players if player != player_id)
+    def discard_card(self, card, player):
+        if player == 'player':
+            self.player_discard_pile.append(card)
+        else:
+            self.opponent_discard_pile.append(card)
+        logger.info(f"Card discarded to {player}'s pile: {card.to_dict()}")
 
     def get_game_state(self):
         return {
-            'players': self.players,
-            'playerHands': {player: [card.to_dict() for card in hand] for player, hand in self.player_hands.items()},
-            'playerFields': {player: [card.to_dict() for card in field] for player, field in self.player_fields.items()},
+            'playerHand': [card.to_dict() for card in self.player_hand],
+            'playerField': [card.to_dict() for card in self.player_field],
+            'opponentField': [card.to_dict() for card in self.opponent_field],
             'currentTurn': self.current_turn,
-            'playerDeckCounts': {player: len(deck) for player, deck in self.player_decks.items()},
-            'playerDiscardPileCounts': {player: len(pile) for player, pile in self.player_discard_piles.items()},
+            'playerDeckCount': len(self.player_deck),
+            'opponentDeckCount': len(self.opponent_deck),
+            'playerDiscardPileCount': len(self.player_discard_pile),
+            'opponentDiscardPileCount': len(self.opponent_discard_pile),
             'playerHealth': self.player_health,
+            'opponentHealth': self.opponent_health,
             'gameOver': self.game_over,
             'roundNumber': self.round_number,
         }
 
     def clear_fields(self):
-        for player in self.players:
-            self.player_fields[player].clear()
+        self.player_field.clear()
+        self.opponent_field.clear()
         logger.info("Fields cleared")
